@@ -1,7 +1,6 @@
 import pytest
 import numpy as np
-from climlab_rrtmg import rrtmg_lw
-from climlab_rrtmg import rrtmg_sw
+from climlab_rrtmg import rrtmg_lw, rrtmg_sw
 
 # Specific heat at constant pressure
 cp = 1004.
