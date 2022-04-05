@@ -63,7 +63,7 @@ def configuration(parent_package='', top_path=None):
         print('No Fortran compiler found, not building the RRTMG_LW radiation module!')
         build = False
 
-    config = Configuration(package_name='_rrtmg_lw', parent_name=parent_package, top_path=top_path)
+    config = Configuration(package_name='rrtmg_lw', parent_name=parent_package, top_path=top_path)
     if build:
         config.add_extension(
             name='_rrtmg_lw',
