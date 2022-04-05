@@ -1,6 +1,16 @@
-# climlab_rrtmg
+# climlab-rrtmg
 
-Just trying out a more federated approach to climlab submodules
+Brian Rose, University at Albany
+
+## About
+
+This is a stand-alone Python wrapper for the RRTMG radiation modules.
+
+The primary use-case is to drive the RRTMG radiation processes in climlab,
+but it can be used as a stand-alone radiation model if you are familiar with the
+RRTMG fortran interface.
+
+## Build instructions
 
 To build *(example for Apple M1 machine, see `./ci/` for other environment files)*:
 ```
@@ -14,3 +24,5 @@ To run tests, do this from any directory other than the climlab_rrtmg repo:
 ```
 pytest -v --pyargs climlab_rrtmg
 ```
+
+## Example usage
