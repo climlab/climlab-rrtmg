@@ -3,7 +3,7 @@ name: build-and-test
 on:
   push:
   pull_request:
-  workflow_dispatch:
+  workflow_dispatch: # allows you to trigger manually
   schedule:
     - cron: '35 4 * * TUE' # Tuesday at 04:35 UTC”
 
@@ -52,4 +52,4 @@ jobs:
           python -c "import climlab_rrtmg"
       - name: Run tests
         run: |
-          pytest -v --pyargs climlab_rrtmg
+          python -m pytest --verbose
