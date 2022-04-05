@@ -51,7 +51,7 @@ jobs:
           python -m pip install --no-deps --editable . -vv
       - name: Import climlab
         run: |
-          python -c "import climlab_rrtmg"
+          python -c "from climlab_rrtmg import rrtmg_lw, rrtmg_sw"
       - name: Run tests
         run: |
           python -m pytest --verbose
