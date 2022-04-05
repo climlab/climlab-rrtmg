@@ -1,4 +1,4 @@
-name: Build and test climlab-rrtmg
+name: build-and-test
 
 on:
   push:
