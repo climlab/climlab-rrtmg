@@ -60,8 +60,16 @@ cfc12vmr = 0. * np.ones_like(play)
 cfc22vmr = 0. * np.ones_like(play)
 ccl4vmr = 0. * np.ones_like(play)
 
+#  Cloud parameters
+cloud_level_index = 8
+cldfrac = 0.5*np.exp(-(play-play[0,cloud_level_index])**2/(2*25.)**2)  # Layer cloud fraction: a Gaussian centered on a pressure level
+clwp = 60. * np.ones_like(play)  # in-cloud liquid water path (g/m2)
+ciwp = 0. * np.ones_like(play)   # in-cloud ice water path (g/m2)
+relq = 14. * np.ones_like(play) # Cloud water drop effective radius (microns)
+reic = 0. * np.ones_like(play)  # Cloud ice particle effective size (microns)
 
-def test_rrtmg_lw():
+
+def test_rrtmg_lw_clearsky():
     nbndlw = int(rrtmg_lw.parrrtm.nbndlw)
     ngptlw = int(rrtmg_lw.parrrtm.ngptlw)
     #  Initialize absorption data
@@ -86,17 +94,10 @@ def test_rrtmg_lw():
     #  broadcast and transpose to get [ncol,nlay,nbndlw]
     tauaer = np.transpose(tauaer * np.ones([nbndlw,ncol,nlay]), (1,2,0))
 
-    return_spectral_olr = False # Whether or not to return OLR averaged over each band
-
-    if return_spectral_olr:
-        ispec = 1 # Spectral OLR output flag, 0: only calculate total fluxes, 1: also return spectral OLR
-    else:
-        ispec = 0
-
     # surface emissivity
     emis = 1. * np.ones((ncol,nbndlw))
 
-    # Clear-sky only (for now)
+    # Clear-sky only
     cldfmcl = np.zeros((ngptlw,ncol,nlay))
     ciwpmcl = np.zeros((ngptlw,ncol,nlay))
     clwpmcl = np.zeros((ngptlw,ncol,nlay))
@@ -104,35 +105,78 @@ def test_rrtmg_lw():
     relqmcl = np.zeros((ncol,nlay))
     taucmcl = np.zeros((ngptlw,ncol,nlay))
 
-    # Call the RRTMG_LW driver
-    (olr_sr, uflx, dflx, hr, uflxc, dflxc, hrc, duflx_dt, duflxc_dt) = \
-            rrtmg_lw.climlab_rrtmg_lw(ncol, nlay, icld, ispec, idrv,
-                 play, plev, tlay, tlev, tsfc,
-                 h2ovmr, o3vmr, co2vmr, ch4vmr, n2ovmr, o2vmr,
-                 cfc11vmr, cfc12vmr, cfc22vmr, ccl4vmr, emis,
-                 inflglw, iceflglw, liqflglw, cldfmcl,
-                 taucmcl, ciwpmcl, clwpmcl, reicmcl, relqmcl,
-                 tauaer)
+    for ispec in [0, 1]: # Spectral OLR output flag, 0: only calculate total fluxes, 1: also return spectral OLR
+        # Call the RRTMG_LW driver
+        (olr_sr, uflx, dflx, hr, uflxc, dflxc, hrc, duflx_dt, duflxc_dt) = \
+                rrtmg_lw.climlab_rrtmg_lw(ncol, nlay, icld, ispec, idrv,
+                     play, plev, tlay, tlev, tsfc,
+                     h2ovmr, o3vmr, co2vmr, ch4vmr, n2ovmr, o2vmr,
+                     cfc11vmr, cfc12vmr, cfc22vmr, ccl4vmr, emis,
+                     inflglw, iceflglw, liqflglw, cldfmcl,
+                     taucmcl, ciwpmcl, clwpmcl, reicmcl, relqmcl,
+                     tauaer)
+
+def test_rrtmg_lw_mcica():
+    nbndlw = int(rrtmg_lw.parrrtm.nbndlw)
+    ngptlw = int(rrtmg_lw.parrrtm.ngptlw)
+    #  Initialize absorption data
+    rrtmg_lw.climlab_rrtmg_lw_ini(cp)
+
+    # Lots of RRTMG parameters
+    icld = 1    # Cloud overlap method, 0: Clear only, 1: Random, 2,  Maximum/random] 3: Maximum
+    irng = 1  # more monte carlo stuff
+    idrv = 0  # whether to also calculate the derivative of flux with respect to surface temp
+    permuteseed = 300
+    inflglw  = 2
+    iceflglw = 1
+    liqflglw = 1
+
+    #  These arrays have an extra dimension for number of bands
+    # in-cloud optical depth [nbndlw,ncol,nlay]
+    tauc = 0. * np.ones_like(play)
+    #  broadcast to get [nbndlw,ncol,nlay]
+    tauc = tauc * np.ones([nbndlw,ncol,nlay])
+    # Aerosol optical depth at mid-point of LW spectral bands [ncol,nlay,nbndlw]
+    tauaer = 0. * np.ones_like(play)
+    #  broadcast and transpose to get [ncol,nlay,nbndlw]
+    tauaer = np.transpose(tauaer * np.ones([nbndlw,ncol,nlay]), (1,2,0))
+
+    # surface emissivity
+    emis = 1. * np.ones((ncol,nbndlw))
+
+    #  Call the Monte Carlo Independent Column Approximation (McICA, Pincus et al., JC, 2003)
+    (cldfmcl, ciwpmcl, clwpmcl, reicmcl, relqmcl, taucmcl) = \
+        rrtmg_lw.climlab_mcica_subcol_lw(
+                    ncol, nlay, icld,
+                    permuteseed, irng, play,
+                    cldfrac, ciwp, clwp, reic, relq, tauc)
+
+    for ispec in [0, 1]: # Spectral OLR output flag, 0: only calculate total fluxes, 1: also return spectral OLR
+        # Call the RRTMG_LW driver
+        (olr_sr, uflx, dflx, hr, uflxc, dflxc, hrc, duflx_dt, duflxc_dt) = \
+                rrtmg_lw.climlab_rrtmg_lw(ncol, nlay, icld, ispec, idrv,
+                     play, plev, tlay, tlev, tsfc,
+                     h2ovmr, o3vmr, co2vmr, ch4vmr, n2ovmr, o2vmr,
+                     cfc11vmr, cfc12vmr, cfc22vmr, ccl4vmr, emis,
+                     inflglw, iceflglw, liqflglw, cldfmcl,
+                     taucmcl, ciwpmcl, clwpmcl, reicmcl, relqmcl,
+                     tauaer)
 
 
-def test_rrtmg_sw():
+def test_rrtmg_sw_clearsky():
     nbndsw = int(rrtmg_sw.parrrsw.nbndsw)
     naerec = int(rrtmg_sw.parrrsw.naerec)
     ngptsw = int(rrtmg_sw.parrrsw.ngptsw)
     #  Initialize absorption data
     rrtmg_sw.climlab_rrtmg_sw_ini(cp)
     #  Lots of RRTMG parameters
-    icld = 1    # Cloud overlap method, 0: Clear only, 1: Random, 2,  Maximum/random] 3: Maximum
+    icld = 0    # Cloud overlap method, 0: Clear only, 1: Random, 2,  Maximum/random] 3: Maximum
     irng = 1  # more monte carlo stuff
     permuteseed = 150
     dyofyr = 0       # day of the year used to get Earth/Sun distance (if not adjes)
     inflgsw  = 2
     iceflgsw = 1
     liqflgsw = 1
-    tauc = 0.
-    ssac = 0.  # In-cloud single scattering albedo
-    asmc = 0.  # In-cloud asymmetry parameter
-    fsfc = 0.  # In-cloud forward scattering fraction (delta function pointing forward "forward peaked scattering")
     # AEROSOLS
     iaer = 0   #! Aerosol option flag
                 #!    0: No aerosol
@@ -205,7 +249,7 @@ def test_rrtmg_sw():
     asdif = 0.3
     asdir = 0.3
 
-    # Clear-sky only (for now)
+    # Clear-sky only
     cldfmcl = np.zeros((ngptsw,ncol,nlay))
     ciwpmcl = np.zeros((ngptsw,ncol,nlay))
     clwpmcl = np.zeros((ngptsw,ncol,nlay))
@@ -215,6 +259,88 @@ def test_rrtmg_sw():
     ssacmcl = np.zeros((ngptsw,ncol,nlay))
     asmcmcl = np.zeros((ngptsw,ncol,nlay))
     fsfcmcl = np.zeros((ngptsw,ncol,nlay))
+
+    (swuflx, swdflx, swhr, swuflxc, swdflxc, swhrc) = \
+            rrtmg_sw.climlab_rrtmg_sw(ncol, nlay, icld, iaer,
+                play, plev, tlay, tlev, tsfc,
+                h2ovmr, o3vmr, co2vmr, ch4vmr, n2ovmr, o2vmr,
+                asdir, asdif, aldir, aldif,
+                coszen, adjes, dyofyr, scon, isolvar,
+                inflgsw, iceflgsw, liqflgsw, cldfmcl,
+                taucmcl, ssacmcl, asmcmcl, fsfcmcl,
+                ciwpmcl, clwpmcl, reicmcl, relqmcl,
+                tauaer, ssaaer, asmaer, ecaer,
+                bndsolvar, indsolvar, solcycfrac)
+
+def test_rrtmg_sw_mcica():
+    nbndsw = int(rrtmg_sw.parrrsw.nbndsw)
+    naerec = int(rrtmg_sw.parrrsw.naerec)
+    ngptsw = int(rrtmg_sw.parrrsw.ngptsw)
+    #  Initialize absorption data
+    rrtmg_sw.climlab_rrtmg_sw_ini(cp)
+    #  Lots of RRTMG parameters
+    icld = 1    # Cloud overlap method, 0: Clear only, 1: Random, 2,  Maximum/random] 3: Maximum
+    irng = 1  # more monte carlo stuff
+    permuteseed = 150
+    dyofyr = 0       # day of the year used to get Earth/Sun distance (if not adjes)
+    inflgsw  = 2
+    iceflgsw = 1
+    liqflgsw = 1
+    tauc = 0.
+    ssac = 0.  # In-cloud single scattering albedo
+    asmc = 0.  # In-cloud asymmetry parameter
+    fsfc = 0.  # In-cloud forward scattering fraction (delta function pointing forward "forward peaked scattering")
+    # AEROSOLS
+    iaer = 0   #! Aerosol option flag
+                #!    0: No aerosol
+                #!    6: ECMWF method: use six ECMWF aerosol types input aerosol optical depth at 0.55 microns for each aerosol type (ecaer)
+                #!    10:Input aerosol optical properties: input total aerosol optical depth, single scattering albedo and asymmetry parameter (tauaer, ssaaer, asmaer) directly
+    tauaer = 0. * np.ones_like(play)   # Aerosol optical depth (iaer=10 only), Dimensions,  (ncol,nlay,nbndsw)] #  (non-delta scaled)
+    #  broadcast and transpose to get [ncol,nlay,nbndsw]
+    tauaer = np.transpose(tauaer * np.ones([nbndsw,ncol,nlay]), (1,2,0))
+    ssaaer = 0. * np.ones_like(play)   # Aerosol single scattering albedo (iaer=10 only), Dimensions,  (ncol,nlay,nbndsw)] #  (non-delta scaled)
+    #  broadcast and transpose to get [ncol,nlay,nbndsw]
+    ssaaer = np.transpose(ssaaer * np.ones([nbndsw,ncol,nlay]), (1,2,0))
+    asmaer = 0. * np.ones_like(play)   # Aerosol asymmetry parameter (iaer=10 only), Dimensions,  (ncol,nlay,nbndsw)] #  (non-delta scaled)
+    #  broadcast and transpose to get [ncol,nlay,nbndsw]
+    asmaer = np.transpose(asmaer * np.ones([nbndsw,ncol,nlay]), (1,2,0))
+    ecaer  = 0. * np.ones_like(play)   # Aerosol optical depth at 0.55 micron (iaer=6 only), Dimensions,  (ncol,nlay,naerec)] #  (non-delta scaled)
+    #  broadcast and transpose to get [ncol,nlay,naerec]
+    ecaer = np.transpose(ecaer * np.ones([naerec,ncol,nlay]), (1,2,0))
+    #  These cloud arrays have an extra dimension for number of bands
+    # in-cloud optical depth [nbndsw,ncol,nlay]
+    tauc = 0. * np.ones_like(play)
+    #  broadcast to get [nbndsw,ncol,nlay]
+    tauc = tauc * np.ones([nbndsw,ncol,nlay])
+    # In-cloud single scattering albedo, same operation
+    ssac = 0. * np.ones_like(play) * np.ones([nbndsw,ncol,nlay])
+    # In-cloud asymmetry parameter
+    asmc = 0. * np.ones_like(play) * np.ones([nbndsw,ncol,nlay])
+    # In-cloud forward scattering fraction (delta function pointing forward "forward peaked scattering")
+    fsfc = 0. * np.ones_like(play) * np.ones([nbndsw,ncol,nlay])
+    # insolation
+    scon = 1365.2  # solar constant
+    coszen = 1/4  # cosine of zenith angle
+    adjes = 1.  # instantaneous irradiance = scon * eccentricity_factor
+    dyofyr = 0       # day of the year used to get Earth/Sun distance (if not adjes)
+    # new arguments for RRTMG_SW version 4.0
+    isolvar = -1    # ! Flag for solar variability method
+    indsolvar = np.ones(2)      # Facular and sunspot amplitude scale factors (isolvar=1),
+                                 # or Mg and SB indices (isolvar=2)
+    bndsolvar = np.ones(nbndsw) # Solar variability scale factors for each shortwave band
+    solcycfrac = 1.              # Fraction of averaged solar cycle (0-1) at current time (isolvar=1)
+
+    # surface albedo
+    aldif = 0.3
+    aldir = 0.3
+    asdif = 0.3
+    asdir = 0.3
+
+    #  Call the Monte Carlo Independent Column Approximation (McICA, Pincus et al., JC, 2003)
+    (cldfmcl, ciwpmcl, clwpmcl, reicmcl, relqmcl, taucmcl,
+    ssacmcl, asmcmcl, fsfcmcl) = rrtmg_sw.climlab_mcica_subcol_sw(
+                    ncol, nlay, icld, permuteseed, irng, play,
+                    cldfrac, ciwp, clwp, reic, relq, tauc, ssac, asmc, fsfc)
 
     (swuflx, swdflx, swhr, swuflxc, swdflxc, swhrc) = \
             rrtmg_sw.climlab_rrtmg_sw(ncol, nlay, icld, iaer,
