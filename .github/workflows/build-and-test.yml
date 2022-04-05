@@ -52,4 +52,4 @@ jobs:
           python -c "import climlab_rrtmg"
       - name: Run tests
         run: |
-          pytest -v --pyargs climlab_rrtmg.tests
+          pytest -v --pyargs climlab_rrtmg
