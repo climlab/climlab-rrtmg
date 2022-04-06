@@ -36,11 +36,14 @@ jobs:
       - uses: actions/checkout@v3
       - uses: conda-incubator/setup-miniconda@v2
         with:
-          miniconda-version: "latest"
-          python-version: ${{ matrix.python-version }}
-          activate-environment: rrtmg_build_env
+          channels: conda-forge
           channel-priority: strict
+          activate-environment: rrtmg_build_env
+          auto-update-conda: false
+          python-version: ${{ matrix.python-version }}
           environment-file: ${{ matrix.environment-file }}
+          mamba-version: '*'
+          use-mamba: true
 
       - name: Setup Fortran compiler for Windows
         if: ${{ matrix.os == 'Windows' }}
