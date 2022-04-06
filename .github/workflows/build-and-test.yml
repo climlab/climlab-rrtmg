@@ -1,9 +1,9 @@
-name: build-and-test
+name: Build and test climlab
 
 on:
   push:
   pull_request:
-  workflow_dispatch: # allows you to trigger manually
+  workflow_dispatch:
   schedule:
     - cron: '35 4 * * TUE' # Tuesday at 04:35 UTC”
 
@@ -17,9 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # python-version: ['3.7', '3.8', '3.9', '3.10']
-        python-version: ['3.7', '3.10']  # temporary.. to speed up testing
-        # os: [Ubuntu, macOS, Windows]
+        python-version: ['3.7', '3.10']
         os: [Ubuntu, Windows]
         include:
           - os: Ubuntu
@@ -36,14 +34,11 @@ jobs:
       - uses: actions/checkout@v3
       - uses: conda-incubator/setup-miniconda@v2
         with:
-          channels: conda-forge
-          channel-priority: strict
-          activate-environment: rrtmg_build_env
-          auto-update-conda: false
+          miniconda-version: "latest"
           python-version: ${{ matrix.python-version }}
+          activate-environment: test_env
+          channel-priority: strict
           environment-file: ${{ matrix.environment-file }}
-          mamba-version: '*'
-          use-mamba: true
 
       - name: Setup Fortran compiler for Windows
         if: ${{ matrix.os == 'Windows' }}
@@ -51,10 +46,15 @@ jobs:
           echo "[build]`ncompiler=mingw32" | Out-File -Encoding ASCII ~/pydistutils.cfg
       - name: Build and install climlab
         run: |
-          python -m pip install --no-deps --editable . -vv
+          python -m pip install --no-deps --editable .
       - name: Import climlab
         run: |
+          python -c "import climlab-rrtmg"
           python -c "from climlab_rrtmg import rrtmg_lw, rrtmg_sw"
       - name: Run tests
         run: |
-          python -m pytest --verbose
+          pytest -v --pyargs climlab-rrtmg.tests
+        #   when we're ready to use codecov again
+        # run: |
+        #   pytest -v --pyargs climlab.tests --cov=climlab --cov-config .coveragerc --cov-report term-missing -v
+        #   codecov
