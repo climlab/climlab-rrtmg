@@ -7,3 +7,4 @@ dependencies:
   - flang
   - pytest
   - future
+  - toolchain
