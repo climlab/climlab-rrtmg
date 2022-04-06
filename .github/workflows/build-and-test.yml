@@ -49,11 +49,11 @@ jobs:
           python -m pip install --no-deps --editable .
       - name: Import climlab
         run: |
-          python -c "import climlab-rrtmg"
+          python -c "import climlab_rrtmg"
           python -c "from climlab_rrtmg import rrtmg_lw, rrtmg_sw"
       - name: Run tests
         run: |
-          pytest -v --pyargs climlab-rrtmg.tests
+          pytest -v --pyargs climlab_rrtmg.tests
         #   when we're ready to use codecov again
         # run: |
         #   pytest -v --pyargs climlab.tests --cov=climlab --cov-config .coveragerc --cov-report term-missing -v
