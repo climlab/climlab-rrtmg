@@ -1,4 +1,4 @@
-name: Build and test climlab
+name: build-and-test
 
 on:
   push:
@@ -44,17 +44,13 @@ jobs:
         if: ${{ matrix.os == 'Windows' }}
         run: |
           echo "[build]`ncompiler=mingw32" | Out-File -Encoding ASCII ~/pydistutils.cfg
-      - name: Build and install climlab
+      - name: Build and install climlab_rrtmg
         run: |
           python -m pip install --no-deps --editable .
-      - name: Import climlab
+      - name: Import climlab_rrtmg
         run: |
           python -c "import climlab_rrtmg"
           python -c "from climlab_rrtmg import rrtmg_lw, rrtmg_sw"
       - name: Run tests
         run: |
           pytest -v --pyargs climlab_rrtmg.tests
-        #   when we're ready to use codecov again
-        # run: |
-        #   pytest -v --pyargs climlab.tests --cov=climlab --cov-config .coveragerc --cov-report term-missing -v
-        #   codecov
