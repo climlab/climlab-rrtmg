@@ -3,6 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - pip
-  - numpy
-  - flang
   - pytest
+  - numpy
+  - scipy # shouldn't be here but build fails on github actions for Windows / Python >= 3.8 https://github.com/brian-rose/climlab-rrtmg/pull/5
+  - flang
