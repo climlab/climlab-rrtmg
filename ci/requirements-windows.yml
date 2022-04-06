@@ -5,6 +5,5 @@ dependencies:
   - pip
   - pytest
   - numpy
-  - scipy
   - flang
   - future
