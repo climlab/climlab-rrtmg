@@ -6,12 +6,21 @@ Brian Rose, University at Albany
 
 ## About
 
-This is a stand-alone Python wrapper for the RRTMG radiation modules.
+This is a stand-alone Python wrapper for the [RRTMG](http://rtweb.aer.com/rrtm_frame.html) radiation modules.
 
 The primary use-case is to drive the RRTMG radiation processes in [climlab](https://climlab.readthedocs.io/),
 but it can be used as a stand-alone radiation model if you are familiar with the
 RRTMG Fortran interface. This is a lightweight wrapper that emulates the Fortran
 interface as closely as possible.
+
+Currently we are wrapping RRTMG_LW v4.85 and RRTMG_SW v4.0. The Fortran source code
+is included in this repository. The latest versions 5.0 of the RRTMG source code
+are available on GitHub [here](https://github.com/AER-RC)
+
+This wrapper includes a modification to RRTMG_LW to allow reporting of OLR
+components in spectral bands, as illustrated using climlab
+[here](https://climlab.readthedocs.io/en/latest/courseware/Spectral_OLR_with_RRTMG.html).
+This modification is strictly diagnostic does not change any other behavior of RRTMG_LW.
 
 ## Installation
 
@@ -56,3 +65,9 @@ To run tests, do this from any directory other than the climlab_rrtmg repo:
 ```
 pytest -v --pyargs climlab_rrtmg
 ```
+
+## Version history
+
+Version 0.2 is the first public release (April 2022).
+The Python wrapper code has been extracted from
+[climlab v0.7.13](https://github.com/brian-rose/climlab/releases/tag/v0.7.13).
