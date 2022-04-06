@@ -7,4 +7,4 @@ dependencies:
   - flang
   - pytest
   - future
-  - toolchain
+  - m2w64-toolchain_w64
