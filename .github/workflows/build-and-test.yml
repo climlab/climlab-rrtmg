@@ -36,7 +36,7 @@ jobs:
         with:
           miniconda-version: "latest"
           python-version: ${{ matrix.python-version }}
-          activate-environment: test_env
+          activate-environment: rrtmg_build_env
           channel-priority: strict
           environment-file: ${{ matrix.environment-file }}
 

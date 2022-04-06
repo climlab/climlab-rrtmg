@@ -1,4 +1,4 @@
-name: test_env
+name: rrtmg_build_env
 channels:
   - conda-forge
 dependencies:
