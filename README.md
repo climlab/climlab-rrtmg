@@ -1,6 +1,6 @@
 # climlab-rrtmg
 
-![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/brian-rose/climlab-rrtmg/build-and-test/main?logo=github&style=for-the-badge)
+![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/climlab/climlab-rrtmg/build-and-test/main?logo=github&style=for-the-badge)
 
 Brian Rose, University at Albany
 
