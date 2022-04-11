@@ -24,9 +24,19 @@ This modification is strictly diagnostic does not change any other behavior of R
 
 ## Installation
 
-Pre-built binaries for many platforms will be available to install from conda-forge. Stay tuned.
+Pre-built binaries for many platforms are available from [conda-forge](https://conda-forge.org).
 
-For now, please build from source (instructions below).
+To install in the current environment:
+```
+conda install climlab-rrtmg --channel conda-forge
+```
+or create a self-contained environment:
+```
+conda create --name my_env python=3.10 climlab-rrtmg --channel conda-forge
+conda activate my_env
+```
+
+See below for instructions on how to build from source.
 
 ## Example usage
 
