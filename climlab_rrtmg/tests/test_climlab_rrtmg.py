@@ -36,8 +36,8 @@ specific_humidity = np.array([4.13141097e-03, 3.41509495e-03, 2.81099479e-03, 2.
        8.55682965e-06, 5.87957411e-06, 5.00000000e-06, 5.00000000e-06,
        5.00000000e-06, 5.00000000e-06])
 # Convert to volume mixing ratio from mass mixing ratio
-#  just multiplying by ratio of molecular weights of H2O and dry air
-h2ovmr = specific_humidity * 18.01528 / 28.97
+#  just multiplying by ratio of molecular weights of dry air and H2O
+h2ovmr = specific_humidity * 28.97 / 18.01528
 h2ovmr = h2ovmr[np.newaxis, ...]
 #  A global-mean ozone climatology
 o3vmr = np.array([2.25573888e-08, 2.38730436e-08, 2.52586476e-08, 2.66442517e-08,
