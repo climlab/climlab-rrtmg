@@ -71,7 +71,7 @@ conda activate rrtmg_build_env
 python -m pip install . --no-deps -vv
 ```
 
-To run tests, do this from any directory other than the climlab_rrtmg repo:
+To run tests, do this from any directory other than the climlab-rrtmg repo:
 ```
 pytest -v --pyargs climlab_rrtmg
 ```
