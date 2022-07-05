@@ -1,6 +1,6 @@
 # climlab-rrtmg
 
-![build-and-test workflow](https://github.com/climlab/climlab-rrtmg/actions/workflows/build-and-test.yml/badge.svg)
+[![Build and test](https://github.com/climlab/climlab-rrtmg/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/climlab/climlab-rrtmg/actions/workflows/build-and-test.yml)
 
 Brian Rose, University at Albany
 
