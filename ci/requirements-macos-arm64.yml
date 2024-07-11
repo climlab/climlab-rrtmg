@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - pip
-  - numpy
-  - gfortran_osx-arm64
-  - libgfortran
+  - numpy<2
+  - fortran-compiler
   - pytest
+  - setuptools<60
