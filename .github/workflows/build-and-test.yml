@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ['3.8', '3.9', '3.10', '3.11']
-        os: [Ubuntu, macOS]
+        os: [Ubuntu, macOS, Windows]
         include:
           - os: Ubuntu
             environment-file: ci/requirements-linux.yml
@@ -26,6 +26,9 @@ jobs:
           - os: macOS
             environment-file: ci/requirements-macos.yml
             shell: bash -l {0}
+          - os: Windows
+            environment-file: ci/requirements-windows.yml
+            shell: powershell
 
     steps:
       - uses: actions/checkout@v3
