@@ -5,5 +5,5 @@ dependencies:
   - pip
   - numpy<2
   - fortran-compiler
-  - toolchain3
   - pytest
+  - setuptools<60
