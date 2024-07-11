@@ -4,6 +4,6 @@ channels:
 dependencies:
   - pip
   - numpy<2
-  - gfortran_osx-arm64
-  - libgfortran
+  - fortran-compiler
   - pytest
+  - setuptools<60
