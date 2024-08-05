@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - pip
-  - numpy<2
+  - numpy
   - fortran-compiler
   - pytest
-  - setuptools<60
+  - meson-python

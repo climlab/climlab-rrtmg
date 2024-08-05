@@ -59,24 +59,40 @@ for working examples that set up all the necessary input arrays and call the dri
 
 ## Building from source
 
-Here are instructions to create a build environment (including Fortran compiler)
-with conda/mamba and build using f2py.
-It should be possible to build using other Fortran compilers, but I haven't tested this.
+### Build environment
 
-To build *(example for Apple M1 machine, see `./ci/` for other environment files)*:
+Here are instructions to create a build environment (including Fortran compiler) with conda/mamba
+
+Starting from the root of the `climlab-rrtmg` repo *(example for Apple M1 machine, see `./ci/` for other environment files)*:
 ```
-mamba create --name rrtmg_build_env python=3.10 --channel conda-forge
+mamba env create --file ./ci/requirements-macos-arm64.yml
+conda activate rrtmg_build_env
+```
+
+Or, to specify the Python version, you can do
+```
+mamba create --name rrtmg_build_env python=3.11 --channel conda-forge
 mamba env update --file ./ci/requirements-macos-arm64.yml
 conda activate rrtmg_build_env
+```
+
+### Building and installing into the Python environment
+
+From the root of the repository, do this:
+```
 python -m pip install . --no-deps -vv
 ```
 
-To run tests, do this from any directory other than the climlab-rrtmg repo:
+### Running tests
+
+To run tests, do this from any directory other than the climlab-emanuel-convection repo:
 ```
-pytest -v --pyargs climlab_rrtmg
+pytest -v --pyargs climlab_sbm_convection
 ```
 
 ## Version history
+
+Version 0.3 updates the build infrastructure.
 
 Version 0.2 is the first public release (April 2022).
 The Python wrapper code has been extracted from
