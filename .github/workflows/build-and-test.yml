@@ -2,30 +2,31 @@ name: Build and test
 
 on:
   push:
+    branches:
+      - "main"
   pull_request:
   workflow_dispatch:
   schedule:
     - cron: '35 4 * * TUE' # Tuesday at 04:35 UTC”
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-test:
     name: ${{ matrix.os }} py${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}-latest
-    defaults:
-      run:
-        shell: ${{ matrix.shell }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11']
+        python-version: ['3.9', '3.10', '3.11', '3.12']
         os: [Ubuntu, macOS]
         include:
           - os: Ubuntu
             environment-file: ci/requirements-linux.yml
-            shell: bash -l {0}
           - os: macOS
             environment-file: ci/requirements-macos.yml
-            shell: bash -l {0}
 
     steps:
       - uses: actions/checkout@v4
