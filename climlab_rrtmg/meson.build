@@ -5,7 +5,7 @@ python_sources = [
 py.install_sources(
   python_sources,
   pure: false,
-  subdir: 'climlab_sbm_convection'
+  subdir: 'climlab_rrtmg'
 )
 
 subdir('tests')
