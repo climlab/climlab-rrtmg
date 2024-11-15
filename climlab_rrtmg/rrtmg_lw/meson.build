@@ -1,4 +1,4 @@
-sources = ['rrtmg_lw_v4.85/gcm_model/modules/parkind.f90',
+sources = files('rrtmg_lw_v4.85/gcm_model/modules/parkind.f90',
            'rrtmg_lw_v4.85/gcm_model/modules/parrrtm.f90',
            'rrtmg_lw_v4.85/gcm_model/modules/rrlw_cld.f90',
            'rrtmg_lw_v4.85/gcm_model/modules/rrlw_con.f90',
@@ -32,7 +32,7 @@ sources = ['rrtmg_lw_v4.85/gcm_model/modules/parkind.f90',
            'rrtmg_lw_v4.85/gcm_model/src/mcica_subcol_gen_lw.f90',
            'rrtmg_lw_v4.85/gcm_model/src/rrtmg_lw_init.f90',
            'sourcemods/rrtmg_lw_rad.f90',
-           'Driver.f90']
+           'Driver.f90')
 
 python_sources = [
   '__init__.py',
