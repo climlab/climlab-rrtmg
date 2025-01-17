@@ -353,3 +353,91 @@ def test_rrtmg_sw_mcica():
                 ciwpmcl, clwpmcl, reicmcl, relqmcl,
                 tauaer, ssaaer, asmaer, ecaer,
                 bndsolvar, indsolvar, solcycfrac)
+
+def test_rrtmg_sw_multicol():
+    ncol = 2
+    plev_2d = np.tile(plev, [ncol, 1])
+    play_2d = np.tile(play, [ncol, 1])
+    tlay_2d = np.tile(tlay, [ncol, 1])
+    tlev_2d = np.tile(tlev, [ncol, 1])
+    tsfc_2d = np.tile(tsfc, [ncol])
+    h2ovmr_2d = np.tile(h2ovmr, [ncol, 1])
+    o3vmr_2d = np.tile(o3vmr, [ncol, 1])
+    co2vmr_2d = np.tile(co2vmr, [ncol, 1])
+    ch4vmr_2d = np.tile(ch4vmr, [ncol, 1])
+    n2ovmr_2d = np.tile(n2ovmr, [ncol, 1])
+    o2vmr_2d = np.tile(o2vmr, [ncol, 1])
+
+    nbndsw = int(rrtmg_sw.parrrsw.nbndsw)
+    naerec = int(rrtmg_sw.parrrsw.naerec)
+    ngptsw = int(rrtmg_sw.parrrsw.ngptsw)
+    #  Initialize absorption data
+    rrtmg_sw.climlab_rrtmg_sw_ini(cp)
+    #  Lots of RRTMG parameters
+    icld = 0    # Cloud overlap method, 0: Clear only, 1: Random, 2,  Maximum/random] 3: Maximum
+    dyofyr = 0       # day of the year used to get Earth/Sun distance (if not adjes)
+    inflgsw  = 2
+    iceflgsw = 1
+    liqflgsw = 1
+    # AEROSOLS
+    iaer = 0   #! Aerosol option flag
+                #!    0: No aerosol
+                #!    6: ECMWF method: use six ECMWF aerosol types input aerosol optical depth at 0.55 microns for each aerosol type (ecaer)
+                #!    10:Input aerosol optical properties: input total aerosol optical depth, single scattering albedo and asymmetry parameter (tauaer, ssaaer, asmaer) directly
+    tauaer_2d = 0. * np.ones_like(play_2d)   # Aerosol optical depth (iaer=10 only), Dimensions,  (ncol,nlay,nbndsw)] #  (non-delta scaled)
+    #  broadcast and transpose to get [ncol,nlay,nbndsw]
+    tauaer_2d = np.transpose(tauaer_2d * np.ones([nbndsw,ncol,nlay]), (1,2,0))
+    ssaaer_2d = 0. * np.ones_like(play)   # Aerosol single scattering albedo (iaer=10 only), Dimensions,  (ncol,nlay,nbndsw)] #  (non-delta scaled)
+    #  broadcast and transpose to get [ncol,nlay,nbndsw]
+    ssaaer_2d = np.transpose(ssaaer_2d * np.ones([nbndsw,ncol,nlay]), (1,2,0))
+    asmaer_2d = 0. * np.ones_like(play_2d)   # Aerosol asymmetry parameter (iaer=10 only), Dimensions,  (ncol,nlay,nbndsw)] #  (non-delta scaled)
+    #  broadcast and transpose to get [ncol,nlay,nbndsw]
+    asmaer_2d = np.transpose(asmaer_2d * np.ones([nbndsw,ncol,nlay]), (1,2,0))
+    ecaer_2d  = 0. * np.ones_like(play_2d)   # Aerosol optical depth at 0.55 micron (iaer=6 only), Dimensions,  (ncol,nlay,naerec)] #  (non-delta scaled)
+    #  broadcast and transpose to get [ncol,nlay,naerec]
+    ecaer_2d = np.transpose(ecaer_2d * np.ones([naerec,ncol,nlay]), (1,2,0))
+    # insolation
+    scon = 1365.2  # solar constant
+    coszen_2d = np.tile(1/4, [ncol])  # cosine of zenith angle
+    # irradiance is twice as large in column 0
+    irradiance_factor = 2.
+    adjes_2d = np.array([irradiance_factor, 1.])  # instantaneous irradiance = scon * eccentricity_factor
+    dyofyr = 0       # day of the year used to get Earth/Sun distance (if not adjes)
+    # new arguments for RRTMG_SW version 4.0
+    isolvar = -1    # ! Flag for solar variability method
+    indsolvar = np.ones(2)      # Facular and sunspot amplitude scale factors (isolvar=1),
+                                 # or Mg and SB indices (isolvar=2)
+    bndsolvar = np.ones(nbndsw) # Solar variability scale factors for each shortwave band
+    solcycfrac = 1.              # Fraction of averaged solar cycle (0-1) at current time (isolvar=1)
+
+    # surface albedo
+    aldif_2d = 0.3 * np.ones_like(tsfc_2d)
+    aldir_2d = 0.3 * np.ones_like(tsfc_2d)
+    asdif_2d = 0.3 * np.ones_like(tsfc_2d)
+    asdir_2d = 0.3 * np.ones_like(tsfc_2d)
+
+    # Clear-sky only
+    cldfmcl_2d = np.zeros((ngptsw,ncol,nlay))
+    ciwpmcl_2d = np.zeros((ngptsw,ncol,nlay))
+    clwpmcl_2d = np.zeros((ngptsw,ncol,nlay))
+    reicmcl_2d = np.zeros((ncol,nlay))
+    relqmcl_2d = np.zeros((ncol,nlay))
+    taucmcl_2d = np.zeros((ngptsw,ncol,nlay))
+    ssacmcl_2d = np.zeros((ngptsw,ncol,nlay))
+    asmcmcl_2d = np.zeros((ngptsw,ncol,nlay))
+    fsfcmcl_2d = np.zeros((ngptsw,ncol,nlay))
+
+    (swuflx, swdflx, swhr, swuflxc, swdflxc, swhrc) = \
+            rrtmg_sw.climlab_rrtmg_sw(ncol, nlay, icld, iaer,
+                play_2d, plev_2d, tlay_2d, tlev_2d, tsfc_2d,
+                h2ovmr_2d, o3vmr_2d, co2vmr_2d, ch4vmr_2d, n2ovmr_2d, o2vmr_2d,
+                asdir_2d, asdif_2d, aldir_2d, aldif_2d,
+                coszen_2d, adjes_2d, dyofyr, scon, isolvar,
+                inflgsw, iceflgsw, liqflgsw, cldfmcl_2d,
+                taucmcl_2d, ssacmcl_2d, asmcmcl_2d, fsfcmcl_2d,
+                ciwpmcl_2d, clwpmcl_2d, reicmcl_2d, relqmcl_2d,
+                tauaer_2d, ssaaer_2d, asmaer_2d, ecaer_2d,
+                bndsolvar, indsolvar, solcycfrac)
+
+    # The downwelling SW at top of model should be twice as large in column 0
+    assert np.isclose(swdflx[0,-1], irradiance_factor*swdflx[1,-1])
