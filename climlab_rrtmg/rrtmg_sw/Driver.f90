@@ -147,7 +147,7 @@ subroutine climlab_rrtmg_sw &
     real(kind=rb), intent(in) :: asdif(ncol)        ! UV/vis surface albedo: diffuse rad
     real(kind=rb), intent(in) :: asdir(ncol)        ! Near-IR surface albedo: diffuse rad
     real(kind=rb), intent(in) :: coszen(ncol)       ! Cosine of solar zenith angle
-    real(kind=rb), intent(in) :: adjes              ! Flux adjustment for Earth/Sun distance
+    real(kind=rb), intent(in) :: adjes(ncol)        ! Flux adjustment (Earth/Sun distance and/or zenith angle compensation)
     integer(kind=im), intent(in) :: dyofyr          ! Day of the year (used to get Earth/Sun
                                                     !  distance if adjflx not provided)
     real(kind=rb), intent(in) :: scon               ! Solar constant (W/m2)
