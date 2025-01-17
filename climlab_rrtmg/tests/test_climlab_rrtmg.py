@@ -399,7 +399,7 @@ def test_rrtmg_sw_multicol():
     # insolation
     scon = 1365.2  # solar constant
     coszen_2d = np.tile(1/4, [ncol])  # cosine of zenith angle
-    adjes = 1.  # instantaneous irradiance = scon * eccentricity_factor
+    adjes_2d = np.tile(1., [ncol])  # instantaneous irradiance = scon * eccentricity_factor
     dyofyr = 0       # day of the year used to get Earth/Sun distance (if not adjes)
     # new arguments for RRTMG_SW version 4.0
     isolvar = -1    # ! Flag for solar variability method
@@ -430,7 +430,7 @@ def test_rrtmg_sw_multicol():
                 play_2d, plev_2d, tlay_2d, tlev_2d, tsfc_2d,
                 h2ovmr_2d, o3vmr_2d, co2vmr_2d, ch4vmr_2d, n2ovmr_2d, o2vmr_2d,
                 asdir_2d, asdif_2d, aldir_2d, aldif_2d,
-                coszen_2d, adjes, dyofyr, scon, isolvar,
+                coszen_2d, adjes_2d, dyofyr, scon, isolvar,
                 inflgsw, iceflgsw, liqflgsw, cldfmcl_2d,
                 taucmcl_2d, ssacmcl_2d, asmcmcl_2d, fsfcmcl_2d,
                 ciwpmcl_2d, clwpmcl_2d, reicmcl_2d, relqmcl_2d,
