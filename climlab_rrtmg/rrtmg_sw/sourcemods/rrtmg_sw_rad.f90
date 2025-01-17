@@ -423,6 +423,8 @@
 
 !      real(kind=rb) :: earth_sun             ! function for Earth/Sun distance factor
       real(kind=rb) :: cossza                 ! Cosine of solar zenith angle
+      ! CLIMLAB new local variable
+      real(kind=rb) :: adjes_local            ! individual column value of irradiance adjustment
       real(kind=rb) :: adjflux(jpband)        ! adjustment for current Earth/Sun distance
       real(kind=rb) :: albdir(nbndsw)         ! surface albedo, direct          ! zalbp
       real(kind=rb) :: albdif(nbndsw)         ! surface albedo, diffuse         ! zalbd
@@ -617,13 +619,16 @@
 
       do iplon = 1, ncol
 
+! CLIMLAB here pass a single-column value of adjes to inatm_sw as we are in the column loop
+         adjes_local = adjes(iplon)
+
 ! Prepare atmosphere profile from GCM for use in RRTMG, and define
 ! other input parameters
 
          call inatm_sw (iplon, nlay, icld, iaer, &
               play, plev, tlay, tlev, tsfc, h2ovmr, &
               o3vmr, co2vmr, ch4vmr, n2ovmr, o2vmr, &
-              adjes, dyofyr, scon, isolvar, &
+              adjes_local, dyofyr, scon, isolvar, &
               inflgsw, iceflgsw, liqflgsw, &
               cldfmcl, taucmcl, ssacmcl, asmcmcl, fsfcmcl, ciwpmcl, clwpmcl, &
               reicmcl, relqmcl, tauaer, ssaaer, asmaer, &
@@ -636,7 +641,6 @@
 ! CLIMLAB second-last time is solar variability
 ! CLIMLAB last line is optional
 ! CLIMLAB moved comment lines out of subroutine call
-
 
 !  For cloudy atmosphere, use cldprmc to set cloud optical properties based on
 !  input cloud physical properties.  Select method based on choices described
@@ -1249,7 +1253,9 @@
 
 ! Set flux adjustment for current Earth/Sun distance (two options).
 ! 1) Use Earth/Sun distance flux adjustment provided by GCM (input as adjes);
-      adjflx = adjes
+   ! CLIMLAB we will apply adjes later, for now assume the global value is 1
+      ! adjflx = adjes
+      adjflx = 1.0_rb
 !
 ! 2) Calculate Earth/Sun distance from DYOFYR, the cumulative day of the year.
 !    (Set adjflx to 1. to use constant Earth/Sun distance of 1 AU).
