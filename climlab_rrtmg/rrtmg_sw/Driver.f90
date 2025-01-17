@@ -238,7 +238,7 @@ subroutine climlab_rrtmg_sw &
 !  These are not comments! Necessary directives to f2py to handle array dimensions
 !f2py depend(ncol,nlay) play, plev, tlay, tlev
 !f2py depend(ncol,nlay) h2ovmr,o3vmr,co2vmr,ch4vmr,n2ovmr,o2vmr
-!f2py depend(ncol) tsfc, aldif, aldir, asdif, asdir, coszen
+!f2py depend(ncol) tsfc, aldif, aldir, asdif, asdir, coszen, adjes
 !f2py depend(ncol,nlay) tauaer,ssaaer,asmaer,ecaer
 !f2py depend(ncol,nlay) reicmcl,relqmcl
 !f2py depend(ncol,nlay) cldfmcl,ciwpmcl,clwpmcl,taucmcl,ssacmcl,asmcmcl,fsfcmcl
