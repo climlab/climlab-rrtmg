@@ -940,8 +940,7 @@
 
       integer(kind=im), intent(in) :: dyofyr          ! Day of the year (used to get Earth/Sun
                                                       !  distance if adjflx not provided)
-      !  CLIMLAB change adjes to an array value, same dimensions as coszen
-      real(kind=rb), intent(in) :: adjes(:)           ! Flux adjustment for Earth/Sun distance
+      real(kind=rb), intent(in) :: adjes              ! Flux adjustment for Earth/Sun distance
       real(kind=rb), intent(in) :: scon               ! Solar constant (W/m2)
                                                       !    Total solar irradiance averaged
                                                       !    over the solar cycle.
