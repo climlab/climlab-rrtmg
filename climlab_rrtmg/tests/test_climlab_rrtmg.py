@@ -399,7 +399,8 @@ def test_rrtmg_sw_multicol():
     # insolation
     scon = 1365.2  # solar constant
     coszen_2d = np.tile(1/4, [ncol])  # cosine of zenith angle
-    adjes_2d = np.tile(1., [ncol])  # instantaneous irradiance = scon * eccentricity_factor
+    # irradiance is twice as large in column 0
+    adjes_2d = np.array([1., 0.5])  # instantaneous irradiance = scon * eccentricity_factor
     dyofyr = 0       # day of the year used to get Earth/Sun distance (if not adjes)
     # new arguments for RRTMG_SW version 4.0
     isolvar = -1    # ! Flag for solar variability method
@@ -436,3 +437,6 @@ def test_rrtmg_sw_multicol():
                 ciwpmcl_2d, clwpmcl_2d, reicmcl_2d, relqmcl_2d,
                 tauaer_2d, ssaaer_2d, asmaer_2d, ecaer_2d,
                 bndsolvar, indsolvar, solcycfrac)
+
+    # The downwelling SW at top of model should be twice as large in column 0
+    assert np.isclose(swdflx[0,-1], 2*swdflx[1,-1])
