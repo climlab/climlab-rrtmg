@@ -1253,9 +1253,7 @@
 
 ! Set flux adjustment for current Earth/Sun distance (two options).
 ! 1) Use Earth/Sun distance flux adjustment provided by GCM (input as adjes);
-   ! CLIMLAB we will apply adjes later, for now assume the global value is 1
-      ! adjflx = adjes
-      adjflx = 1.0_rb
+      adjflx = adjes
 !
 ! 2) Calculate Earth/Sun distance from DYOFYR, the cumulative day of the year.
 !    (Set adjflx to 1. to use constant Earth/Sun distance of 1 AU).
