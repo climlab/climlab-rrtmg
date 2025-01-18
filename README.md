@@ -17,10 +17,20 @@ Currently we are wrapping RRTMG_LW v4.85 and RRTMG_SW v4.0. The Fortran source c
 is included in this repository. The latest versions 5.0 of the RRTMG source code
 are available on GitHub [here](https://github.com/AER-RC)
 
-This wrapper includes a modification to RRTMG_LW to allow reporting of OLR
-components in spectral bands, as illustrated using climlab
+This wrapper includes the following modifications:
+
+- RRTMG_LW is modified to allow reporting of OLR components in spectral bands,
+ as illustrated using climlab
 [here](https://climlab.readthedocs.io/en/latest/courseware/Spectral_OLR_with_RRTMG.html).
 This modification is strictly diagnostic does not change any other behavior of RRTMG_LW.
+- RRTMG_SW is modified to allow gridpoint-specific values of the input parameter `adjes` 
+which is the adjustment to total solar irradiance. 
+
+The parameter `adjes` is used within RRTMG_SW to account for time-of-year adjustments 
+to Earth-Sun distance. Latest versions of climlab compute non-uniform values of 
+`irradiance_factor` to compensate for [different diurnal averages of the solar zenith angle](https://climlab.readthedocs.io/en/latest/api/climlab.radiation.insolation.html). 
+climlab's `irradiance_factor` is mapped to `adjes` when this RRTMG driver is called from climlab.
+
 
 ## Installation
 
@@ -63,10 +73,9 @@ Here are instructions to create a build environment (including Fortran compiler)
 with conda/mamba and build using f2py.
 It should be possible to build using other Fortran compilers, but I haven't tested this.
 
-To build *(example for Apple M1 machine, see `./ci/` for other environment files)*:
+To build:
 ```
-mamba create --name rrtmg_build_env python=3.10 --channel conda-forge
-mamba env update --file ./ci/requirements-macos-arm64.yml
+mamba env create --file ./ci/requirements.yml
 conda activate rrtmg_build_env
 python -m pip install . --no-deps -vv
 ```
@@ -78,6 +87,7 @@ pytest -v --pyargs climlab_rrtmg
 
 ## Version history
 
-Version 0.2 is the first public release (April 2022).
+- Version 0.3 (released January 2024) includes the modification for grid-variable `adjes` described above. It is designed to work with climlab v0.9 and higher.
+- Version 0.2 is the first public release (April 2022).
 The Python wrapper code has been extracted from
 [climlab v0.7.13](https://github.com/brian-rose/climlab/releases/tag/v0.7.13).
