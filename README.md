@@ -75,7 +75,7 @@ It should be possible to build using other Fortran compilers, but I haven't test
 
 To build:
 ```
-mamba env create --file ./ci/requirements.yml
+conda env create --file ./ci/requirements.yml
 conda activate rrtmg_build_env
 python -m pip install . --no-deps -vv
 ```
