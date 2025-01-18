@@ -17,14 +17,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11']
+        python-version: ['3.9', '3.10', '3.11']
         os: [Ubuntu, macOS]
         include:
           - os: Ubuntu
-            environment-file: ci/requirements-linux.yml
             shell: bash -l {0}
           - os: macOS
-            environment-file: ci/requirements-macos.yml
             shell: bash -l {0}
 
     steps:
@@ -35,7 +33,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           activate-environment: rrtmg_build_env
           channel-priority: strict
-          environment-file: ${{ matrix.environment-file }}
+          environment-file: ci/requirements.yml
       - name: Build and install climlab_rrtmg
         run: |
           python -m pip install --no-deps --editable .

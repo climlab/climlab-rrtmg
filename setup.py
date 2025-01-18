@@ -1,6 +1,6 @@
 import os
 
-VERSION = '0.2'
+VERSION = '0.3'
 
 # BEFORE importing setuptools, remove MANIFEST. Otherwise it may not be
 # properly updated when the contents of directories change (true for distutils,
