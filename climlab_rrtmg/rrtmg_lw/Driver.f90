@@ -42,7 +42,9 @@ subroutine climlab_mcica_subcol_lw &
     ! Modules
     use parkind, only : im => kind_im
     use mcica_subcol_gen_lw, only: mcica_subcol_lw
-    use parrrtm, only: nbndlw, ngptlw
+    !use parrrtm, only: nbndlw, ngptlw
+    integer(kind=im), parameter :: nbndlw = 16
+    integer(kind=im), parameter :: ngptlw = 140  
 
 ! Input
     integer, parameter :: rb = selected_real_kind(12)
@@ -79,8 +81,9 @@ subroutine climlab_mcica_subcol_lw &
 !f2py depend(ncol,nlay) play,
 !f2py depend(ncol,nlay) cldfrac,ciwp,clwp,reic,relq
 !f2py depend(ncol,nlay) tauc
-! !f2py depend(ncol,nlay) cldfmcl,ciwpmcl,clwpmcl,taucmcl
-! !f2py depend(ncol,nlay) reicmcl,relqmcl
+!f2py depend(ncol,nlay) cldfmcl,ciwpmcl,clwpmcl
+!f2py depend(ncol,nlay) reicmcl,relqmcl
+!f2py depend(ncol,nlay) taucmcl
 
     ! Call the Monte Carlo Independent Column Approximation
     !   (McICA, Pincus et al., JC, 2003)
@@ -103,8 +106,10 @@ subroutine climlab_rrtmg_lw &
 
 ! Modules
     use parkind, only : im => kind_im
-    use parrrtm, only: nbndlw, ngptlw
     use rrtmg_lw_rad, only: rrtmg_lw
+    !use parrrtm, only: nbndlw, ngptlw
+    integer(kind=im), parameter :: nbndlw = 16
+    integer(kind=im), parameter :: ngptlw = 140  
 
 ! Input
     integer, parameter :: rb = selected_real_kind(12)

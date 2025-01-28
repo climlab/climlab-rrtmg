@@ -2,6 +2,17 @@ import pytest
 import numpy as np
 from climlab_rrtmg import rrtmg_lw, rrtmg_sw
 
+# nbndsw = int(rrtmg_sw.parrrsw.nbndsw)
+# naerec = int(rrtmg_sw.parrrsw.naerec)
+# ngptsw = int(rrtmg_sw.parrrsw.ngptsw)
+# nbndlw = int(rrtmg_lw.parrrtm.nbndlw)
+# ngptlw = int(rrtmg_lw.parrrtm.ngptlw)
+nbndsw = 14
+naerec  = 6
+ngptsw = 112
+nbndlw = 16
+ngptlw = 140
+
 # Specific heat at constant pressure
 cp = 1004.
 
@@ -70,8 +81,6 @@ reic = 0. * np.ones_like(play)  # Cloud ice particle effective size (microns)
 
 
 def test_rrtmg_lw_clearsky():
-    nbndlw = int(rrtmg_lw.parrrtm.nbndlw)
-    ngptlw = int(rrtmg_lw.parrrtm.ngptlw)
     #  Initialize absorption data
     rrtmg_lw.climlab_rrtmg_lw_ini(cp)
 
@@ -117,8 +126,6 @@ def test_rrtmg_lw_clearsky():
                      tauaer)
 
 def test_rrtmg_lw_mcica():
-    nbndlw = int(rrtmg_lw.parrrtm.nbndlw)
-    ngptlw = int(rrtmg_lw.parrrtm.ngptlw)
     #  Initialize absorption data
     rrtmg_lw.climlab_rrtmg_lw_ini(cp)
 
@@ -164,9 +171,6 @@ def test_rrtmg_lw_mcica():
 
 
 def test_rrtmg_sw_clearsky():
-    nbndsw = int(rrtmg_sw.parrrsw.nbndsw)
-    naerec = int(rrtmg_sw.parrrsw.naerec)
-    ngptsw = int(rrtmg_sw.parrrsw.ngptsw)
     #  Initialize absorption data
     rrtmg_sw.climlab_rrtmg_sw_ini(cp)
     #  Lots of RRTMG parameters
@@ -273,9 +277,6 @@ def test_rrtmg_sw_clearsky():
                 bndsolvar, indsolvar, solcycfrac)
 
 def test_rrtmg_sw_mcica():
-    nbndsw = int(rrtmg_sw.parrrsw.nbndsw)
-    naerec = int(rrtmg_sw.parrrsw.naerec)
-    ngptsw = int(rrtmg_sw.parrrsw.ngptsw)
     #  Initialize absorption data
     rrtmg_sw.climlab_rrtmg_sw_ini(cp)
     #  Lots of RRTMG parameters
@@ -368,9 +369,6 @@ def test_rrtmg_sw_multicol():
     n2ovmr_2d = np.tile(n2ovmr, [ncol, 1])
     o2vmr_2d = np.tile(o2vmr, [ncol, 1])
 
-    nbndsw = int(rrtmg_sw.parrrsw.nbndsw)
-    naerec = int(rrtmg_sw.parrrsw.naerec)
-    ngptsw = int(rrtmg_sw.parrrsw.ngptsw)
     #  Initialize absorption data
     rrtmg_sw.climlab_rrtmg_sw_ini(cp)
     #  Lots of RRTMG parameters

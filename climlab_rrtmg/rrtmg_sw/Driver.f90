@@ -43,7 +43,9 @@ subroutine climlab_mcica_subcol_sw &
 ! Modules
   use parkind, only : im => kind_im
   use mcica_subcol_gen_sw, only: mcica_subcol_sw
-  use parrrsw, only: nbndsw, ngptsw, naerec
+  !use parrrsw, only: nbndsw, ngptsw
+  integer(kind=im), parameter :: nbndsw = 14
+  integer(kind=im), parameter :: ngptsw = 112
 
 ! Input
   integer, parameter :: rb = selected_real_kind(12)
@@ -114,19 +116,21 @@ subroutine climlab_rrtmg_sw &
 
 ! Modules
     use parkind, only : im => kind_im
-    use parrrsw, only: nbndsw, ngptsw, naerec
     use rrtmg_sw_rad, only: rrtmg_sw
-
+    ! use parrrsw, only: nbndsw, ngptsw, naerec
+    integer(kind=im), parameter :: nbndsw = 14
+    integer(kind=im), parameter :: naerec  = 6
+    integer(kind=im), parameter :: ngptsw = 112
 ! Input
     integer, parameter :: rb = selected_real_kind(12)
     integer(kind=im), intent(in) :: ncol            ! number of columns
     integer(kind=im), intent(in) :: nlay            ! number of model layers
-    integer(kind=im), intent(inout) :: icld         ! Cloud overlap method
+    integer(kind=im), intent(inout) :: icld            ! Cloud overlap method
                                                     !    0: Clear only
                                                     !    1: Random
                                                     !    2: Maximum/random
                                                     !    3: Maximum
-    integer(kind=im), intent(inout) :: iaer         ! Aerosol option flag
+    integer(kind=im), intent(inout) :: iaer            ! Aerosol option flag
                                                     !    0: No aerosol
                                                     !    6: ECMWF method
                                                     !    10:Input aerosol optical
@@ -147,7 +151,7 @@ subroutine climlab_rrtmg_sw &
     real(kind=rb), intent(in) :: asdif(ncol)        ! UV/vis surface albedo: diffuse rad
     real(kind=rb), intent(in) :: asdir(ncol)        ! Near-IR surface albedo: diffuse rad
     real(kind=rb), intent(in) :: coszen(ncol)       ! Cosine of solar zenith angle
-    real(kind=rb), intent(in) :: adjes(ncol)        ! Flux adjustment (Earth/Sun distance and/or zenith angle compensation)
+    real(kind=rb), intent(in) :: adjes(ncol)        ! Flux adjustment for Earth/Sun distance
     integer(kind=im), intent(in) :: dyofyr          ! Day of the year (used to get Earth/Sun
                                                     !  distance if adjflx not provided)
     real(kind=rb), intent(in) :: scon               ! Solar constant (W/m2)
@@ -236,13 +240,20 @@ subroutine climlab_rrtmg_sw &
     real(kind=rb), intent(out) :: swhrc(ncol,nlay)       ! Clear sky shortwave radiative heating rate (K/d)
 
 !  These are not comments! Necessary directives to f2py to handle array dimensions
-!f2py depend(ncol,nlay) play, plev, tlay, tlev
+!f2py depend(ncol,nlay) play
+!f2py depend(ncol,nlay) plev
+!f2py depend(ncol,nlay) tlay
+!f2py depend(ncol,nlay) tlev
 !f2py depend(ncol,nlay) h2ovmr,o3vmr,co2vmr,ch4vmr,n2ovmr,o2vmr
-!f2py depend(ncol) tsfc, aldif, aldir, asdif, asdir, coszen, adjes
-!f2py depend(ncol,nlay) tauaer,ssaaer,asmaer,ecaer
+!f2py depend(ncol) asdir,asdif,aldir,aldif,coszen, adjes, tsfc
+!f2py depend(ncol,nlay) cldfmcl,taucmcl,ssacmcl,asmcmcl,fsfcmcl
+!f2py depend(ncol,nlay) ciwpmcl,clwpmcl
 !f2py depend(ncol,nlay) reicmcl,relqmcl
-!f2py depend(ncol,nlay) cldfmcl,ciwpmcl,clwpmcl,taucmcl,ssacmcl,asmcmcl,fsfcmcl
-!f2py depend(ncol,nlay) swuflx,swdflx,swhr,swuflxc,swdflxc,swhrc
+!f2py depend(ncol,nlay) tauaer,ssaaer,asmaer,ecaer
+!f2py depend(ncol,nlay) swuflx,swdflx
+!f2py depend(ncol,nlay) swhr
+!f2py depend(ncol,nlay) swuflxc,swdflxc
+!f2py depend(ncol,nlay) swhrc
 
     !  Call the RRTMG_SW driver to compute radiative fluxes
     call rrtmg_sw(ncol    ,nlay    ,icld    ,iaer    , &
