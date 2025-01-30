@@ -1,13 +1,9 @@
-project('climlab_rrtmg', 'c', 
-  version : '0.4',
-  meson_version: '>=0.64.0',
-  default_options : ['warning_level=2'],
-)
+project('climlab_rrtmg', 'c',)
 
 add_languages('fortran')
 # Add Fortran compiler flags globally (you already have this)
 add_project_arguments(
-    '-fPIC', '-fno-range-check', '-w',
+    '-O0', '-fPIC', '-fno-range-check', '-w', '-fno-var-tracking-assignments',
     language: 'fortran'
 )
 
@@ -119,6 +115,28 @@ incdir_f2py = run_command(py,
 
 inc_np = include_directories(incdir_numpy, incdir_f2py)
 
+swmodule = custom_target('_rrtmg_sw.c',
+   input : 'climlab_rrtmg/rrtmg_sw/Driver.f90',  
+   output : ['_rrtmg_swmodule.c', 
+            #  '_rrtmg_sw-f2pywrappers2.f90',
+            #  '_rrtmg_sw-f2pywrappers.f',
+            ],
+   command : [py, '-m', 'numpy.f2py', '@INPUT@', 
+              '-m', '_rrtmg_sw', '--lower',
+              '--build-dir', '@OUTDIR@']
+)
+
+lwmodule = custom_target('_rrtmg_lw.c',
+   input : 'climlab_rrtmg/rrtmg_lw/Driver.f90',  
+   output : ['_rrtmg_lwmodule.c', 
+            #  '_rrtmg_lw-f2pywrappers2.f90',
+            #  '_rrtmg_lw-f2pywrappers.f',
+             ],
+   command : [py, '-m', 'numpy.f2py', '@INPUT@', 
+              '-m', '_rrtmg_lw', '--lower',
+              '--build-dir', '@OUTDIR@']
+)
+
 rrtmg_sw_library = static_library(
   'rrtmg_sw',
   rrtmg_sw_sources,
@@ -127,7 +145,8 @@ rrtmg_sw_library = static_library(
 
 py.extension_module('_rrtmg_sw',
   sources: [
-    '_rrtmg_swmodule.c',
+    swmodule,
+    # '_rrtmg_swmodule.c',
     incdir_f2py / 'fortranobject.c'
   ],
   include_directories: inc_np,
@@ -136,15 +155,6 @@ py.extension_module('_rrtmg_sw',
   install: true
 )
 
-mysource = custom_target('_rrtmg_lw.c',
-   input : 'climlab_rrtmg/rrtmg_lw/Driver.f90',  
-   output : ['_rrtmg_lwmodule.c', 
-             '_rrtmg_lw-f2pywrappers2.f90',
-             '_rrtmg_lw-f2pywrappers.f',],
-   command : [py, '-m', 'numpy.f2py', '@INPUT@', 
-              '-m', '_rrtmg_lw', '--lower',
-              '--build-dir', '@OUTDIR@']
-)
 
 rrtmg_lw_library = static_library(
   'rrtmg_lw',
@@ -154,7 +164,7 @@ rrtmg_lw_library = static_library(
 
 py.extension_module('_rrtmg_lw',
   sources: [
-    mysource,
+    lwmodule,
     # '_rrtmg_lwmodule.c',
     incdir_f2py / 'fortranobject.c'
   ],
