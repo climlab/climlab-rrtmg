@@ -96,6 +96,17 @@ py_mod = import('python')
 py = py_mod.find_installation(pure: false)
 py_dep = py.dependency()
 
+
+python_sources = [
+   'climlab_rrtmg/__init__.py',
+ ]
+
+ py.install_sources(
+   python_sources,
+   pure: false,
+   subdir: 'climlab_rrtmg'
+ )
+
 incdir_numpy = run_command(py,
   ['-c', 'import os; os.chdir(".."); import numpy; print(numpy.get_include())'],
   check : true
@@ -108,7 +119,7 @@ incdir_f2py = run_command(py,
 
 inc_np = include_directories(incdir_numpy, incdir_f2py)
 
-rrtmg_sw_library = static_library(
+rrtmg_sw_library = shared_library(
   'rrtmg_sw',
   rrtmg_sw_sources,
   include_directories: inc_np
@@ -125,7 +136,7 @@ py.extension_module('_rrtmg_sw',
   install: true
 )
 
-rrtmg_lw_library = static_library(
+rrtmg_lw_library = shared_library(
   'rrtmg_lw',
   rrtmg_lw_sources,
   include_directories: inc_np
