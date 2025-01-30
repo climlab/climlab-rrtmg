@@ -119,7 +119,7 @@ incdir_f2py = run_command(py,
 
 inc_np = include_directories(incdir_numpy, incdir_f2py)
 
-rrtmg_sw_library = shared_library(
+rrtmg_sw_library = static_library(
   'rrtmg_sw',
   rrtmg_sw_sources,
   include_directories: inc_np
@@ -136,7 +136,17 @@ py.extension_module('_rrtmg_sw',
   install: true
 )
 
-rrtmg_lw_library = shared_library(
+mysource = custom_target('_rrtmg_lw.c',
+   input : 'climlab_rrtmg/rrtmg_lw/Driver.f90',  
+   output : ['_rrtmg_lwmodule.c', 
+             '_rrtmg_lw-f2pywrappers2.f90',
+             '_rrtmg_lw-f2pywrappers.f',],
+   command : [py, '-m', 'numpy.f2py', '@INPUT@', 
+              '-m', '_rrtmg_lw', '--lower',
+              '--build-dir', '@OUTDIR@']
+)
+
+rrtmg_lw_library = static_library(
   'rrtmg_lw',
   rrtmg_lw_sources,
   include_directories: inc_np
@@ -144,7 +154,8 @@ rrtmg_lw_library = shared_library(
 
 py.extension_module('_rrtmg_lw',
   sources: [
-    '_rrtmg_lwmodule.c',
+    mysource,
+    # '_rrtmg_lwmodule.c',
     incdir_f2py / 'fortranobject.c'
   ],
   include_directories: inc_np,
