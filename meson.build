@@ -1,5 +1,5 @@
-project('Fortran Wrapper', 'c', 
-  version : '0.1',
+project('climlab_rrtmg', 'c', 
+  version : '0.4',
   meson_version: '>=0.64.0',
   default_options : ['warning_level=2'],
 )
@@ -7,9 +7,8 @@ project('Fortran Wrapper', 'c',
 add_languages('fortran')
 # Add Fortran compiler flags globally (you already have this)
 add_project_arguments(
-    '-O2', '-fPIC', '-ftree-vectorize', '-fno-range-check', '-fvisibility=hidden', 
-    '-fstack-protector-strong', '-mtune=haswell', '-march=nocona', '-ffunction-sections', 
-    '-pipe', '-Wno-unused-variable', language: 'fortran'
+    '-fPIC', '-fno-range-check', '-w',
+    language: 'fortran'
 )
 
 # Fortran source files: sw
