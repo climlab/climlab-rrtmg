@@ -42,7 +42,7 @@ conda install climlab-rrtmg --channel conda-forge
 ```
 or create a self-contained environment:
 ```
-conda create --name my_env python=3.10 climlab-rrtmg --channel conda-forge
+conda create --name my_env python=3.13 climlab-rrtmg --channel conda-forge
 conda activate my_env
 ```
 
@@ -70,8 +70,7 @@ for working examples that set up all the necessary input arrays and call the dri
 ## Building from source
 
 Here are instructions to create a build environment (including Fortran compiler)
-with conda/mamba and build using f2py.
-It should be possible to build using other Fortran compilers, but I haven't tested this.
+with conda and build using f2py.
 
 To build:
 ```
@@ -87,7 +86,8 @@ pytest -v --pyargs climlab_rrtmg
 
 ## Version history
 
-- Version 0.3 (released January 2024) includes the modification for grid-variable `adjes` described above. It is designed to work with climlab v0.9 and higher.
+- Version 0.4 (released February 2025) is a major refactor of the build system so this package can run on Python 3.12 and above. The build now uses [meson](https://mesonbuild.com/).
+- Version 0.3 (released January 2025) includes the modification for grid-variable `adjes` described above. It is designed to work with climlab v0.9 and higher.
 - Version 0.2 is the first public release (April 2022).
 The Python wrapper code has been extracted from
 [climlab v0.7.13](https://github.com/brian-rose/climlab/releases/tag/v0.7.13).
