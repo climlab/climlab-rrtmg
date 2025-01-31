@@ -30,6 +30,8 @@ jobs:
             shell: bash -l {0}
           - os: macOS
             shell: bash -l {0}
+          - os: Windows
+            shell: powershell
 
     steps:
       - uses: actions/checkout@v4
