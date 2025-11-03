@@ -765,17 +765,12 @@ subroutine climlab_rrtmg_sw_ensemble &
                 bndsolvar,indsolvar,solcycfrac, &
                 add_aero_layer, r_mu, t_mu, r_bar, t_bar)
 
-        if (ind_ens.eq.0) then
+        if (ind_ens.eq.1) then
             swuflx = swuflx1 / n_rrtmg_repeat
             swdflx = swdflx1 / n_rrtmg_repeat
             swhr = swhr1 / n_rrtmg_repeat
-            swuflxc = swuflxc1 / n_rrtmg_repeat
-            swdflxc = swdflxc1 / n_rrtmg_repeat
-            swhrc = swhrc1 / n_rrtmg_repeat
             swuflxspec = swuflxspec1 / n_rrtmg_repeat
             swdflxspec = swdflxspec1 / n_rrtmg_repeat
-            swuflxcspec = swuflxcspec1 / n_rrtmg_repeat
-            swdflxcspec = swdflxcspec1 / n_rrtmg_repeat
         else
             swuflx = swuflx + swuflx1 / n_rrtmg_repeat
             swdflx = swdflx + swdflx1 / n_rrtmg_repeat
