@@ -191,6 +191,19 @@ def test_rrtmg_lw_mcica():
                      taucmcl, ciwpmcl, clwpmcl, reicmcl, relqmcl,
                      tauaer)
 
+    ispec = 1        
+    from itertools import product
+    for (n_ens, col_by_col, do_seed_permutation) in product([1,2,10],[0,1],[0,1]):
+        (olr_sr1, uflx1, dflx1, hr1, uflxc1, dflxc1, hrc1, duflx_dt1, duflxc_dt2, uflxspec1, dflxspec1, uflxcspec1, dflxcspec1) = \
+            rrtmg_lw.climlab_rrtmg_lw_ensemble(ncol, nlay, 
+                permuteseed, irng, n_ens   ,col_by_col   ,do_seed_permutation,
+                icld     , ispec   , idrv    , 
+                play    , plev    , tlay    , tlev    , tsfc    , 
+                cldfrac, ciwp, clwp, reic, relq, tauc, 
+                h2ovmr  , o3vmr   , co2vmr  , ch4vmr  , n2ovmr  , o2vmr ,
+                cfc11vmr, cfc12vmr, cfc22vmr, ccl4vmr , emis ,
+                inflglw , iceflglw, liqflglw, tauaer)
+
 
 def test_rrtmg_sw_clearsky():
     #  Initialize absorption data

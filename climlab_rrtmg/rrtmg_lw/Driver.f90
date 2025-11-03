@@ -295,7 +295,7 @@ subroutine climlab_rrtmg_lw_ensemble &
     permuteseed, irng, n_ens   ,col_by_col   ,do_seed_permutation , &
     icld     , ispec   , idrv    , &
     play    , plev    , tlay    , tlev    , tsfc    , &
-    cldfrac, ciwp, clwp, reic, relq, tauc, ssac, asmc, fsfc , &
+    cldfrac, ciwp, clwp, reic, relq, tauc, &
     h2ovmr  , o3vmr   , co2vmr  , ch4vmr  , n2ovmr  , o2vmr , &
     cfc11vmr, cfc12vmr, cfc22vmr, ccl4vmr , emis    , &
     inflglw , iceflglw, liqflglw, tauaer  , &
