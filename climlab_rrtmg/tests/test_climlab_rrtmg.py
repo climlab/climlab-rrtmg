@@ -403,6 +403,28 @@ def test_rrtmg_sw_mcica():
                 ciwpmcl, clwpmcl, reicmcl, relqmcl,
                 tauaer, ssaaer, asmaer, ecaer,
                 bndsolvar, indsolvar, solcycfrac)
+    
+    ispec = 1
+    kmodts = 2
+    add_aero_layer = 0
+    r_mu = np.zeros((ncol,nlay,nbndsw))
+    t_mu = np.ones((ncol,nlay,nbndsw))
+    r_bar = np.zeros((ncol,nlay,nbndsw))
+    t_bar = np.ones((ncol,nlay,nbndsw))
+    from itertools import product
+    for (n_ens, col_by_col, do_seed_permutation) in product([1,2,10],[0,1],[0,1]):
+        (swuflx1, swdflx1, swhr1, swuflxc1, swdflxc1, swhrc1, swuflxspec1, swdflxspec1, swuflxcspec1, swdflxcspec1) = \
+            rrtmg_sw.climlab_rrtmg_sw_ensemble(ncol, nlay, 
+                permuteseed, irng, n_ens   ,col_by_col   ,do_seed_permutation,
+                icld, ispec, iaer, play, plev, tlay, tlev, tsfc,
+                cldfrac, ciwp, clwp, reic, relq, tauc, ssac, asmc, fsfc , 
+                h2ovmr, o3vmr, co2vmr, ch4vmr, n2ovmr, o2vmr,
+                asdir, asdif, aldir, aldif,
+                kmodts, coszen, adjes, dyofyr, scon, isolvar,
+                inflgsw, iceflgsw, liqflgsw, 
+                tauaer, ssaaer, asmaer, ecaer,
+                bndsolvar, indsolvar, solcycfrac, 
+                add_aero_layer, r_mu, t_mu, r_bar, t_bar)
 
 def test_rrtmg_sw_multicol():
     ncol = 2
@@ -489,3 +511,38 @@ def test_rrtmg_sw_multicol():
     # The downwelling SW at top of model should be twice as large in column 0
     assert swdflx[0,-1] > 400.0
     assert np.isclose(swdflx[0,-1], irradiance_factor*swdflx[1,-1])
+
+    # Clear-sky only
+    cldfrac_2d = np.zeros((ncol,nlay))
+    ciwp_2d = np.zeros((ncol,nlay))
+    clwp_2d = np.zeros((ncol,nlay))
+    reic_2d = np.zeros((ncol,nlay))
+    relq_2d = np.zeros((ncol,nlay))
+    tauc_2d = np.zeros((nbndsw,ncol,nlay))
+    ssac_2d = np.zeros((nbndsw,ncol,nlay))
+    asmc_2d = np.zeros((nbndsw,ncol,nlay))
+    fsfc_2d = np.zeros((nbndsw,ncol,nlay))
+
+    ispec = 1
+    kmodts = 2
+    add_aero_layer = 0
+    irng = 1  # more monte carlo stuff
+    permuteseed = 150
+    r_mu = np.zeros((ncol,nlay,nbndsw))
+    t_mu = np.ones((ncol,nlay,nbndsw))
+    r_bar = np.zeros((ncol,nlay,nbndsw))
+    t_bar = np.ones((ncol,nlay,nbndsw))
+    from itertools import product
+    for (n_ens, col_by_col, do_seed_permutation) in product([1,2,10],[0,1],[0,1]):
+        (swuflx1, swdflx1, swhr1, swuflxc1, swdflxc1, swhrc1, swuflxspec1, swdflxspec1, swuflxcspec1, swdflxcspec1) = \
+            rrtmg_sw.climlab_rrtmg_sw_ensemble(ncol, nlay, 
+                permuteseed, irng, n_ens   ,col_by_col   ,do_seed_permutation,
+                icld, ispec, iaer, play_2d, plev_2d, tlay_2d, tlev_2d, tsfc_2d,
+                cldfrac_2d, ciwp_2d, clwp_2d, reic_2d, relq_2d, tauc_2d, ssac_2d, asmc_2d, fsfc_2d , 
+                h2ovmr_2d, o3vmr_2d, co2vmr_2d, ch4vmr_2d, n2ovmr_2d, o2vmr_2d,
+                asdir_2d, asdif_2d, aldir_2d, aldif_2d,
+                kmodts, coszen_2d, adjes_2d, dyofyr, scon, isolvar,
+                inflgsw, iceflgsw, liqflgsw, 
+                tauaer_2d, ssaaer_2d, asmaer_2d, ecaer_2d,
+                bndsolvar, indsolvar, solcycfrac, 
+                add_aero_layer, r_mu, t_mu, r_bar, t_bar)
