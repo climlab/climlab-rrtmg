@@ -304,11 +304,8 @@ subroutine climlab_rrtmg_lw_ensemble &
 
 ! Modules
     use parkind, only : im => kind_im
-    use rrtmg_lw_rad, only: rrtmg_lw
-    use mcica_subcol_gen_lw, only: mcica_subcol_lw
-    !use parrrtm, only: nbndlw, ngptlw
+    !use parrrtm, only: nbndlw
     integer(kind=im), parameter :: nbndlw = 16
-    integer(kind=im), parameter :: ngptlw = 140  
 
 ! Input
     integer, parameter :: rb = selected_real_kind(12)
