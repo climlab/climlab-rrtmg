@@ -395,6 +395,7 @@ subroutine climlab_rrtmg_lw_ensemble &
     else
         n_rrtmg_repeat = 1
     end if
+    ! initialize output vars
     olr_sr = 0._rb
     uflx = 0._rb
     dflx = 0._rb
@@ -408,7 +409,6 @@ subroutine climlab_rrtmg_lw_ensemble &
     dflxspec = 0._rb
     uflxcspec = 0._rb
     dflxcspec = 0._rb
-    ! initialize output vars
     do icol=1, ncol
         do ind_ens=1, n_rrtmg_repeat
             call climlab_rrtmg_lw_single_col &
@@ -578,6 +578,28 @@ subroutine climlab_rrtmg_lw_single_col &
     real(kind=rb) :: dflxcspec1(1,nlay+1,nbndlw) ! Clear sky longwave downward flux spectrum (W/m2)
     integer(kind=im) :: seed, ilay, shift
 
+    ! Arrays initialization
+    olr_sr1 = 0._rb
+    uflx1 = 0._rb
+    dflx1 = 0._rb
+    hr1 = 0._rb
+    uflxc1 = 0._rb
+    dflxc1 = 0._rb
+    hrc1 = 0._rb
+    duflx_dt1 = 0._rb
+    duflxc_dt1 = 0._rb
+    uflxspec1 = 0._rb
+    dflxspec1 = 0._rb
+    uflxcspec1 = 0._rb
+    dflxcspec1 = 0._rb
+
+    cldfmcl1 = 0._rb
+    ciwpmcl1 = 0._rb
+    clwpmcl1 = 0._rb
+    reicmcl1 = 0._rb
+    relqmcl1 = 0._rb
+    taucmcl1 = 0._rb
+
     !  Call the Monte Carlo Independent Column Approximation (McICA, Pincus et al., JC, 2003)
     if (do_seed_permutation.eq.1) then
         if (col_by_col.eq.0) then
@@ -612,6 +634,7 @@ subroutine climlab_rrtmg_lw_single_col &
     emis1(1,:) = emis(icol,:)
     do ilay=1, nlay
         tauc1(:,1,ilay) = tauc(:,icol,ilay)
+        tauaer1(1,ilay,:) = tauaer(icol,ilay,:) 
     end do
     call mcica_subcol_lw(1, 1, nlay, icld, seed, irng, play1, &
             cldfrac1, ciwp1, clwp1, reic1, relq1, tauc1, cldfmcl1, &
