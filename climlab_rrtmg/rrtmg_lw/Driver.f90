@@ -638,6 +638,7 @@ subroutine climlab_rrtmg_lw_single_col &
         tauc1(:,1,ilay) = tauc(:,icol,ilay)
         tauaer1(1,ilay,:) = tauaer(icol,ilay,:) 
     end do
+    !write(*,*) 'lw new: ncol, col_by_col=', ncol, col_by_col, 'icol=', icol, 'seed=', seed
     call mcica_subcol_lw(1, 1, nlay, icld, seed, irng, play1, &
             cldfrac1, ciwp1, clwp1, reic1, relq1, tauc1, cldfmcl1, &
             ciwpmcl1, clwpmcl1, reicmcl1, relqmcl1, taucmcl1)
@@ -815,7 +816,8 @@ subroutine climlab_rrtmg_lw_ensemble_dbg &
             seed = permuteseed
         end if
 
-        if ((ncol.eq.1).or.(do_col_by_col.ne.1)) then
+        !write(*,*) 'lw dbg: ncol, col_by_col=', ncol, col_by_col, 'seed=', seed
+        if ((ncol.eq.1).or.(col_by_col.ne.1)) then
             call mcica_subcol_lw(1, ncol, nlay, icld, seed, irng, play, &
                        cldfrac, ciwp, clwp, reic, relq, tauc, cldfmcl, &
                        ciwpmcl, clwpmcl, reicmcl, relqmcl, taucmcl)
@@ -834,7 +836,7 @@ subroutine climlab_rrtmg_lw_ensemble_dbg &
                        cldfrac1, ciwp1, clwp1, reic1, relq1, tauc1, cldfmcl1, &
                        ciwpmcl1, clwpmcl1, reicmcl1, relqmcl1, taucmcl1)
                 do ilay=1, nlay
-                    cldfmcl(:,icol,nlay) = cldfmcl1(:,1,ilay)
+                    cldfmcl(:,icol,ilay) = cldfmcl1(:,1,ilay)
                     ciwpmcl(:,icol,ilay) = ciwpmcl1(:,1,ilay)
                     clwpmcl(:,icol,ilay) = clwpmcl1(:,1,ilay)
                     reicmcl(icol,ilay) = reicmcl1(1,ilay)

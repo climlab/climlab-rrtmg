@@ -997,6 +997,7 @@ subroutine climlab_rrtmg_sw_single_col&
         r_bar1(1,ilay,:) = r_bar(icol,ilay,:)
         t_bar1(1,ilay,:) = t_bar(icol,ilay,:)
     end do
+    !write(*,*) 'sw new: ncol, col_by_col=', ncol, col_by_col, 'icol=', icol, 'seed=', seed
     call mcica_subcol_sw(1, 1, nlay, icld, seed, irng, play1, &
         cldfrac1, ciwp1, clwp1, reic1, relq1, &
         tauc1, ssac1, asmc1, fsfc1, &
@@ -1267,7 +1268,8 @@ subroutine climlab_rrtmg_sw_ensemble_dbg &
             seed = permuteseed
         end if
 
-        if ((ncol.eq.1).or.(do_col_by_col.ne.1)) then
+        !write(*,*) 'sw dbg: ncol, col_by_col=', ncol, col_by_col, 'seed=', seed
+        if ((ncol.eq.1).or.(col_by_col.ne.1)) then
             call mcica_subcol_sw(1, ncol, nlay, icld, seed, irng, play, &
                      cldfrac, ciwp, clwp, reic, relq, tauc, ssac, asmc, fsfc, &
                      cldfmcl, ciwpmcl, clwpmcl, reicmcl, relqmcl, &
@@ -1292,7 +1294,7 @@ subroutine climlab_rrtmg_sw_ensemble_dbg &
                     cldfmcl1, ciwpmcl1, clwpmcl1, reicmcl1, relqmcl1, &
                     taucmcl1, ssacmcl1, asmcmcl1, fsfcmcl1)
                 do ilay=1, nlay
-                    cldfmcl(:,icol,nlay) = cldfmcl1(:,1,ilay)
+                    cldfmcl(:,icol,ilay) = cldfmcl1(:,1,ilay)
                     ciwpmcl(:,icol,ilay) = ciwpmcl1(:,1,ilay)
                     clwpmcl(:,icol,ilay) = clwpmcl1(:,1,ilay)
                     reicmcl(icol,ilay) = reicmcl1(1,ilay)
