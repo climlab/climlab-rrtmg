@@ -967,10 +967,10 @@ subroutine climlab_rrtmg_sw_single_col&
     tlev1(1,:) = tlev(icol,:)
     tsfc1(1) = tsfc(icol)
     cldfrac1(1,:) = cldfrac(icol,:)
-    ciwp1(1,:) = ciwp(1,:)
-    clwp1(1,:) = clwp(1,:)
-    reic1(1,:) = reic(1,:)
-    relq1(1,:) = relq(1,:)
+    ciwp1(1,:) = ciwp(icol,:)
+    clwp1(1,:) = clwp(icol,:)
+    reic1(1,:) = reic(icol,:)
+    relq1(1,:) = relq(icol,:)
     h2ovmr1(1,:) = h2ovmr(icol,:)
     o3vmr1(1,:) = o3vmr(icol,:)
     co2vmr1(1,:) = co2vmr(icol,:)
@@ -997,7 +997,6 @@ subroutine climlab_rrtmg_sw_single_col&
         r_bar1(1,ilay,:) = r_bar(icol,ilay,:)
         t_bar1(1,ilay,:) = t_bar(icol,ilay,:)
     end do
-    !write(*,*) 'sw new: ncol, col_by_col=', ncol, col_by_col, 'icol=', icol, 'seed=', seed
     call mcica_subcol_sw(1, 1, nlay, icld, seed, irng, play1, &
         cldfrac1, ciwp1, clwp1, reic1, relq1, &
         tauc1, ssac1, asmc1, fsfc1, &

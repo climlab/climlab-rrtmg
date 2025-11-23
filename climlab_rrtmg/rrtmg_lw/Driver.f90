@@ -609,7 +609,7 @@ subroutine climlab_rrtmg_lw_single_col &
         else 
             shift = ind_ens
         end if
-        seed = permuteseed + shift * ngptsw
+        seed = permuteseed + shift * ngptlw
     else
         seed = permuteseed
     end if
@@ -638,7 +638,6 @@ subroutine climlab_rrtmg_lw_single_col &
         tauc1(:,1,ilay) = tauc(:,icol,ilay)
         tauaer1(1,ilay,:) = tauaer(icol,ilay,:) 
     end do
-    !write(*,*) 'lw new: ncol, col_by_col=', ncol, col_by_col, 'icol=', icol, 'seed=', seed
     call mcica_subcol_lw(1, 1, nlay, icld, seed, irng, play1, &
             cldfrac1, ciwp1, clwp1, reic1, relq1, tauc1, cldfmcl1, &
             ciwpmcl1, clwpmcl1, reicmcl1, relqmcl1, taucmcl1)
@@ -811,7 +810,7 @@ subroutine climlab_rrtmg_lw_ensemble_dbg &
     do ind_ens=1, n_rrtmg_repeat
         !  Call the Monte Carlo Independent Column Approximation (McICA, Pincus et al., JC, 2003)
         if (do_seed_permutation.eq.1) then
-            seed = permuteseed + ind_ens * ngptsw
+            seed = permuteseed + ind_ens * ngptlw
         else
             seed = permuteseed
         end if
