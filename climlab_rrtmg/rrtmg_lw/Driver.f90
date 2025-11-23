@@ -609,7 +609,7 @@ subroutine climlab_rrtmg_lw_single_col &
         else 
             shift = ind_ens
         end if
-        seed = permuteseed + shift * ngptsw
+        seed = permuteseed + shift * ngptlw
     else
         seed = permuteseed
     end if
