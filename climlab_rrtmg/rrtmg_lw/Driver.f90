@@ -406,9 +406,9 @@ subroutine climlab_rrtmg_lw_ensemble &
     dflxspec = 0._rb
     uflxcspec = 0._rb
     dflxcspec = 0._rb
-    ! These are not comments, they are using for multi-processing
+    ! These are not comments, they are used in multi-processing
     !$omp parallel do collapse(2) default(shared) &
-    !$omp private(i, ilay) schedule(static)
+    !$omp private(icol, ind_ens) schedule(static)
     do icol=1, ncol
         do ind_ens=1, n_rrtmg_repeat
             call climlab_rrtmg_lw_single_col &
@@ -425,7 +425,7 @@ subroutine climlab_rrtmg_lw_ensemble &
         end do
     end do
     !$omp end parallel do
-    ! These are not comments, they are using for multi-processing
+    ! These are not comments, they are used in multi-processing
 
     olr_sr = olr_sr / n_rrtmg_repeat
     uflx = uflx / n_rrtmg_repeat
