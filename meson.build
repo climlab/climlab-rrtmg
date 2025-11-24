@@ -3,7 +3,7 @@ project('climlab_rrtmg', 'c',)
 add_languages('fortran')
 # Add Fortran compiler flags globally (you already have this)
 add_project_arguments(
-    '-O3', '-fPIC', '-fno-range-check', '-w', '-fno-var-tracking-assignments', 
+    '-O3', '-fPIC', '-fno-range-check', '-w', '-fno-var-tracking-assignments', '-Wuninitialized',  '-Wall', '-Wmaybe-uninitialized',
     language: 'fortran'
 )
 
