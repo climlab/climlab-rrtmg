@@ -635,7 +635,18 @@ subroutine climlab_rrtmg_sw_ensemble &
     real(kind=rb), intent(in) :: r_bar(ncol,nlay,nbndsw)    ! Aerosols diffusive reflection
     real(kind=rb), intent(in) :: t_bar(ncol,nlay,nbndsw)    ! Aerosols diffusive transmission
 
-    integer(kind=im) :: ind_ens, n_rrtmg_repeat, icol, ilay
+    real(kind=rb) :: swuflx1(1,nlay+1)    ! Total sky shortwave upward flux (W/m2)
+    real(kind=rb) :: swdflx1(1,nlay+1)    ! Total sky shortwave downward flux (W/m2)
+    real(kind=rb) :: swhr1(1,nlay)        ! Total sky shortwave radiative heating rate (K/d)
+    real(kind=rb) :: swuflxc1(1,nlay+1)   ! Clear sky shortwave upward flux (W/m2)
+    real(kind=rb) :: swdflxc1(1,nlay+1)   ! Clear sky shortwave downward flux (W/m2)
+    real(kind=rb) :: swhrc1(1,nlay)       ! Clear sky shortwave radiative heating rate (K/d)
+    real(kind=rb) :: swuflxspec1(1,nlay+1,nbndsw)    ! Total sky shortwave upward flux spectrum (W/m2)
+    real(kind=rb) :: swdflxspec1(1,nlay+1,nbndsw)    ! Total sky shortwave downward flux spectrum (W/m2)
+    real(kind=rb) :: swuflxcspec1(1,nlay+1,nbndsw)   ! Clear sky shortwave upward flux spectrum (W/m2)
+    real(kind=rb) :: swdflxcspec1(1,nlay+1,nbndsw)   ! Clear sky shortwave downward flux spectrum (W/m2)
+
+    integer(kind=im) :: ind_ens, n_rrtmg_repeat, icol
 
 !  These are not comments! Necessary directives to f2py to handle array dimensions
 !f2py depend(ncol,nlay) play
@@ -670,8 +681,9 @@ subroutine climlab_rrtmg_sw_ensemble &
     swuflxcspec = 0._rb
     swdflxcspec = 0._rb
     ! These are not comments, they are used in multi-processing
-    !$omp parallel do collapse(2) default(shared) &
-    !$omp private(icol, ind_ens) schedule(static)
+    !$omp parallel do default(shared) schedule(static) private(ind_ens, &
+    !$omp      swuflx1, swdflx1, swhr1, swuflxc1, swdflxc1, swhrc1, &
+    !$omp      swuflxspec1, swdflxspec1, swuflxcspec1, swdflxcspec1)
     do icol=1, ncol
         do ind_ens=1, n_rrtmg_repeat
             call climlab_rrtmg_sw_single_col &
@@ -686,9 +698,19 @@ subroutine climlab_rrtmg_sw_ensemble &
             inflgsw ,iceflgsw,liqflgsw, &
             tauaer  ,ssaaer  ,asmaer  ,ecaer   , &
             bndsolvar,indsolvar,solcycfrac, &
-            swuflx, swdflx, swhr, swuflxc, swdflxc, swhrc, &
-            swuflxspec, swdflxspec, swuflxcspec, swdflxcspec, &
+            swuflx1, swdflx1, swhr1, swuflxc1, swdflxc1, swhrc1, &
+            swuflxspec1, swdflxspec1, swuflxcspec1, swdflxcspec1, &
             add_aero_layer, r_mu, t_mu, r_bar, t_bar)
+            swuflx(icol,:) = swuflx(icol,:) + swuflx1(1,:)
+            swdflx(icol,:) = swdflx(icol,:) + swdflx1(1,:)
+            swhr(icol,:) = swhr(icol,:) + swhr1(1,:)
+            swuflxc(icol,:) = swuflxc(icol,:) + swuflxc1(1,:)
+            swdflxc(icol,:) = swdflxc(icol,:) + swdflxc1(1,:)
+            swhrc(icol,:) = swhrc(icol,:) + swhrc1(1,:)
+            swuflxspec(icol,:,:) = swuflxspec(icol,:,:) + swuflxspec1(1,:,:)
+            swdflxspec(icol,:,:) = swdflxspec(icol,:,:) + swdflxspec1(1,:,:)
+            swuflxcspec(icol,:,:) = swuflxcspec(icol,:,:) + swuflxcspec1(1,:,:)
+            swdflxcspec(icol,:,:) = swdflxcspec(icol,:,:) + swdflxcspec1(1,:,:)
         end do
     end do
     !$omp end parallel do
@@ -717,8 +739,8 @@ subroutine climlab_rrtmg_sw_single_col&
     inflgsw ,iceflgsw,liqflgsw, &
     tauaer  ,ssaaer  ,asmaer  ,ecaer   , &
     bndsolvar,indsolvar,solcycfrac, &
-    swuflx, swdflx, swhr, swuflxc, swdflxc, swhrc, &
-    swuflxspec, swdflxspec, swuflxcspec, swdflxcspec, &
+    swuflx1, swdflx1, swhr1, swuflxc1, swdflxc1, swhrc1, &
+    swuflxspec1, swdflxspec1, swuflxcspec1, swdflxcspec1, &
     add_aero_layer, r_mu, t_mu, r_bar, t_bar)
 ! Modules
     use parkind, only : im => kind_im
@@ -853,16 +875,6 @@ subroutine climlab_rrtmg_sw_single_col&
     real(kind=rb), intent(in) :: ecaer(ncol,nlay,naerec)   ! Aerosol optical depth at 0.55 micron (iaer=6 only)
 
 ! Output
-    real(kind=rb), intent(inout) :: swuflx(ncol,nlay+1)    ! Total sky shortwave upward flux (W/m2)
-    real(kind=rb), intent(inout) :: swdflx(ncol,nlay+1)    ! Total sky shortwave downward flux (W/m2)
-    real(kind=rb), intent(inout) :: swhr(ncol,nlay)        ! Total sky shortwave radiative heating rate (K/d)
-    real(kind=rb), intent(inout) :: swuflxc(ncol,nlay+1)   ! Clear sky shortwave upward flux (W/m2)
-    real(kind=rb), intent(inout) :: swdflxc(ncol,nlay+1)   ! Clear sky shortwave downward flux (W/m2)
-    real(kind=rb), intent(inout) :: swhrc(ncol,nlay)       ! Clear sky shortwave radiative heating rate (K/d)
-    real(kind=rb), intent(inout) :: swuflxspec(ncol,nlay+1,nbndsw)    ! Total sky shortwave upward flux spectrum (W/m2)
-    real(kind=rb), intent(inout) :: swdflxspec(ncol,nlay+1,nbndsw)    ! Total sky shortwave downward flux spectrum (W/m2)
-    real(kind=rb), intent(inout) :: swuflxcspec(ncol,nlay+1,nbndsw)   ! Clear sky shortwave upward flux spectrum (W/m2)
-    real(kind=rb), intent(inout) :: swdflxcspec(ncol,nlay+1,nbndsw)   ! Clear sky shortwave downward flux spectrum (W/m2)
     integer(kind=im), intent(in) :: add_aero_layer
     real(kind=rb), intent(in) :: r_mu(ncol,nlay,nbndsw)    ! Aerosols directional reflection
     real(kind=rb), intent(in) :: t_mu(ncol,nlay,nbndsw)    ! Aerosols directional transmission
@@ -905,16 +917,16 @@ subroutine climlab_rrtmg_sw_single_col&
     real(kind=rb) :: r_bar1(1,nlay,nbndsw)    ! Aerosols diffusive reflection
     real(kind=rb) :: t_bar1(1,nlay,nbndsw)    ! Aerosols diffusive transmission
 
-    real(kind=rb) :: swuflx1(1,nlay+1)    ! Total sky shortwave upward flux (W/m2)
-    real(kind=rb) :: swdflx1(1,nlay+1)    ! Total sky shortwave downward flux (W/m2)
-    real(kind=rb) :: swhr1(1,nlay)        ! Total sky shortwave radiative heating rate (K/d)
-    real(kind=rb) :: swuflxc1(1,nlay+1)   ! Clear sky shortwave upward flux (W/m2)
-    real(kind=rb) :: swdflxc1(1,nlay+1)   ! Clear sky shortwave downward flux (W/m2)
-    real(kind=rb) :: swhrc1(1,nlay)       ! Clear sky shortwave radiative heating rate (K/d)
-    real(kind=rb) :: swuflxspec1(1,nlay+1,nbndsw)    ! Total sky shortwave upward flux spectrum (W/m2)
-    real(kind=rb) :: swdflxspec1(1,nlay+1,nbndsw)    ! Total sky shortwave downward flux spectrum (W/m2)
-    real(kind=rb) :: swuflxcspec1(1,nlay+1,nbndsw)   ! Clear sky shortwave upward flux spectrum (W/m2)
-    real(kind=rb) :: swdflxcspec1(1,nlay+1,nbndsw)   ! Clear sky shortwave downward flux spectrum (W/m2)
+    real(kind=rb), intent(out) :: swuflx1(1,nlay+1)    ! Total sky shortwave upward flux (W/m2)
+    real(kind=rb), intent(out) :: swdflx1(1,nlay+1)    ! Total sky shortwave downward flux (W/m2)
+    real(kind=rb), intent(out) :: swhr1(1,nlay)        ! Total sky shortwave radiative heating rate (K/d)
+    real(kind=rb), intent(out) :: swuflxc1(1,nlay+1)   ! Clear sky shortwave upward flux (W/m2)
+    real(kind=rb), intent(out) :: swdflxc1(1,nlay+1)   ! Clear sky shortwave downward flux (W/m2)
+    real(kind=rb), intent(out) :: swhrc1(1,nlay)       ! Clear sky shortwave radiative heating rate (K/d)
+    real(kind=rb), intent(out) :: swuflxspec1(1,nlay+1,nbndsw)    ! Total sky shortwave upward flux spectrum (W/m2)
+    real(kind=rb), intent(out) :: swdflxspec1(1,nlay+1,nbndsw)    ! Total sky shortwave downward flux spectrum (W/m2)
+    real(kind=rb), intent(out) :: swuflxcspec1(1,nlay+1,nbndsw)   ! Clear sky shortwave upward flux spectrum (W/m2)
+    real(kind=rb), intent(out) :: swdflxcspec1(1,nlay+1,nbndsw)   ! Clear sky shortwave downward flux spectrum (W/m2)
 
     ! These quantities are computed by McICA
     real(kind=rb) :: cldfmcl1(ngptsw,1,nlay)   ! cloud fraction [mcica]
@@ -1017,14 +1029,4 @@ subroutine climlab_rrtmg_sw_single_col&
             swuflxspec1, swdflxspec1, swuflxcspec1, swdflxcspec1, &
             bndsolvar,indsolvar,solcycfrac, &
             add_aero_layer, r_mu1, t_mu1, r_bar1, t_bar1)
-    swuflx(icol,:) = swuflx(icol,:) + swuflx1(1,:)
-    swdflx(icol,:) = swdflx(icol,:) + swdflx1(1,:)
-    swhr(icol,:) = swhr(icol,:) + swhr1(1,:)
-    swuflxc(icol,:) = swuflxc(icol,:) + swuflxc1(1,:)
-    swdflxc(icol,:) = swdflxc(icol,:) + swdflxc1(1,:)
-    swhrc(icol,:) = swhrc(icol,:) + swhrc1(1,:)
-    swuflxspec(icol,:,:) = swuflxspec(icol,:,:) + swuflxspec1(1,:,:)
-    swdflxspec(icol,:,:) = swdflxspec(icol,:,:) + swdflxspec1(1,:,:)
-    swuflxcspec(icol,:,:) = swuflxcspec(icol,:,:) + swuflxcspec1(1,:,:)
-    swdflxcspec(icol,:,:) = swdflxcspec(icol,:,:) + swdflxcspec1(1,:,:)
 end subroutine climlab_rrtmg_sw_single_col

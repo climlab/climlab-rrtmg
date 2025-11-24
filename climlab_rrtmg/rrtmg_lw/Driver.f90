@@ -373,7 +373,24 @@ subroutine climlab_rrtmg_lw_ensemble &
     real(kind=rb), intent(out) :: dflxspec(ncol,nlay+1,nbndlw) ! Total sky longwave downward flux spectrum (W/m2)
     real(kind=rb), intent(out) :: uflxcspec(ncol,nlay+1,nbndlw) ! Clear sky longwave upward flux spectrum (W/m2)
     real(kind=rb), intent(out) :: dflxcspec(ncol,nlay+1,nbndlw) ! Clear sky longwave downward flux spectrum (W/m2)
-    integer(kind=im) :: ind_ens, n_rrtmg_repeat, icol, ilay
+
+    real(kind=rb) :: olr_sr1(1,nbndlw)    ! Spectrally-decomposed OLR (W/m2)
+    real(kind=rb) :: uflx1(1,nlay+1)      ! Total sky longwave upward flux (W/m2)
+    real(kind=rb) :: dflx1(1,nlay+1)      ! Total sky longwave downward flux (W/m2)
+    real(kind=rb) :: hr1(1,nlay)          ! Total sky longwave radiative heating rate (K/d)
+    real(kind=rb) :: uflxc1(1,nlay+1)     ! Clear sky longwave upward flux (W/m2)
+    real(kind=rb) :: dflxc1(1,nlay+1)     ! Clear sky longwave downward flux (W/m2)
+    real(kind=rb) :: hrc1(1,nlay)         ! Clear sky longwave radiative heating rate (K/d)
+    real(kind=rb) :: duflx_dt1(1,nlay+1)  ! change in upward longwave flux (w/m2/K)
+                                          ! with respect to surface temperature
+    real(kind=rb) :: duflxc_dt1(1,nlay+1) ! change in clear sky upward longwave flux (w/m2/K)
+                                                         ! with respect to surface temperature
+    real(kind=rb) :: uflxspec1(1,nlay+1,nbndlw) ! Total sky longwave upward flux spectrum (W/m2)
+    real(kind=rb) :: dflxspec1(1,nlay+1,nbndlw) ! Total sky longwave downward flux spectrum (W/m2)
+    real(kind=rb) :: uflxcspec1(1,nlay+1,nbndlw) ! Clear sky longwave upward flux spectrum (W/m2)
+    real(kind=rb) :: dflxcspec1(1,nlay+1,nbndlw) ! Clear sky longwave downward flux spectrum (W/m2)
+
+    integer(kind=im) :: ind_ens, n_rrtmg_repeat, icol
 
 !  These are not comments! Necessary directives to f2py to handle array dimensions
 !f2py depend(ncol,nlay) play, plev, tlay, tlev
@@ -407,8 +424,10 @@ subroutine climlab_rrtmg_lw_ensemble &
     uflxcspec = 0._rb
     dflxcspec = 0._rb
     ! These are not comments, they are used in multi-processing
-    !$omp parallel do collapse(2) default(shared) &
-    !$omp private(icol, ind_ens) schedule(static)
+    !$omp parallel do default(shared) schedule(static) private(ind_ens, &
+    !$omp            olr_sr1  , uflx1    , dflx1    , hr1      , uflxc1   , &
+    !$omp            dflxc1,  hrc1, duflx_dt1,duflxc_dt1, uflxspec1, dflxspec1, &
+    !$omp            uflxcspec1, dflxcspec1)
     do icol=1, ncol
         do ind_ens=1, n_rrtmg_repeat
             call climlab_rrtmg_lw_single_col &
@@ -420,8 +439,21 @@ subroutine climlab_rrtmg_lw_ensemble &
                 h2ovmr  , o3vmr   , co2vmr  , ch4vmr  , n2ovmr  , o2vmr , &
                 cfc11vmr, cfc12vmr, cfc22vmr, ccl4vmr , emis    , &
                 inflglw , iceflglw, liqflglw, tauaer  , &
-                olr_sr  , uflx    , dflx    , hr      , uflxc   , dflxc,  hrc, &
-                duflx_dt,duflxc_dt, uflxspec, dflxspec, uflxcspec, dflxcspec)
+                olr_sr1  , uflx1    , dflx1    , hr1      , uflxc1   , dflxc1,  hrc1, &
+                duflx_dt1, duflxc_dt1, uflxspec1, dflxspec1, uflxcspec1, dflxcspec1)
+            olr_sr(icol,:) = olr_sr(icol,:) + olr_sr1(1,:)
+            uflx(icol,:) = uflx(icol,:) + uflx1(1,:)
+            dflx(icol,:) = dflx(icol,:) + dflx1(1,:)
+            hr(icol,:) = hr(icol,:) + hr1(1,:)
+            uflxc(icol,:) = uflxc(icol,:) + uflxc1(1,:)
+            dflxc(icol,:) = dflxc(icol,:) + dflxc1(1,:)
+            hrc(icol,:) = hrc(icol,:) + hrc1(1,:)
+            duflx_dt(icol,:) = duflx_dt(icol,:) + duflx_dt1(1,:)
+            duflxc_dt(icol,:) = duflxc_dt(icol,:) + duflxc_dt1(1,:)
+            uflxspec(icol,:,:) = uflxspec(icol,:,:) + uflxspec1(1,:,:)
+            dflxspec(icol,:,:) = dflxspec(icol,:,:) + dflxspec1(1,:,:)
+            uflxcspec(icol,:,:) = uflxcspec(icol,:,:) + uflxcspec1(1,:,:)
+            dflxcspec(icol,:,:) = dflxcspec(icol,:,:) + dflxcspec1(1,:,:)
         end do
     end do
     !$omp end parallel do
@@ -451,8 +483,8 @@ subroutine climlab_rrtmg_lw_single_col &
     h2ovmr  , o3vmr   , co2vmr  , ch4vmr  , n2ovmr  , o2vmr , &
     cfc11vmr, cfc12vmr, cfc22vmr, ccl4vmr , emis    , &
     inflglw , iceflglw, liqflglw, tauaer  , &
-    olr_sr  , uflx    , dflx    , hr      , uflxc   , dflxc,  hrc, &
-    duflx_dt,duflxc_dt, uflxspec, dflxspec, uflxcspec, dflxcspec)
+    olr_sr1  , uflx1    , dflx1    , hr1      , uflxc1   , dflxc1,  hrc1, &
+    duflx_dt1, duflxc_dt1, uflxspec1, dflxspec1, uflxcspec1, dflxcspec1)
 
 ! Modules
     use parkind, only : im => kind_im
@@ -513,22 +545,22 @@ subroutine climlab_rrtmg_lw_single_col &
     real(kind=rb), intent(in) :: tauaer(ncol,nlay,nbndlw) ! aerosol optical depth at mid-point of LW spectral bands
 
 ! Output
-    real(kind=rb), intent(inout) :: olr_sr(ncol,nbndlw)    ! Spectrally-decomposed OLR (W/m2)
-    real(kind=rb), intent(inout) :: uflx(ncol,nlay+1)      ! Total sky longwave upward flux (W/m2)
-    real(kind=rb), intent(inout) :: dflx(ncol,nlay+1)      ! Total sky longwave downward flux (W/m2)
-    real(kind=rb), intent(inout) :: hr(ncol,nlay)          ! Total sky longwave radiative heating rate (K/d)
-    real(kind=rb), intent(inout) :: uflxc(ncol,nlay+1)     ! Clear sky longwave upward flux (W/m2)
-    real(kind=rb), intent(inout) :: dflxc(ncol,nlay+1)     ! Clear sky longwave downward flux (W/m2)
-    real(kind=rb), intent(inout) :: hrc(ncol,nlay)         ! Clear sky longwave radiative heating rate (K/d)
+    real(kind=rb), intent(out) :: olr_sr1(1,nbndlw)    ! Spectrally-decomposed OLR (W/m2)
+    real(kind=rb), intent(out) :: uflx1(1,nlay+1)      ! Total sky longwave upward flux (W/m2)
+    real(kind=rb), intent(out) :: dflx1(1,nlay+1)      ! Total sky longwave downward flux (W/m2)
+    real(kind=rb), intent(out) :: hr1(1,nlay)          ! Total sky longwave radiative heating rate (K/d)
+    real(kind=rb), intent(out) :: uflxc1(1,nlay+1)     ! Clear sky longwave upward flux (W/m2)
+    real(kind=rb), intent(out) :: dflxc1(1,nlay+1)     ! Clear sky longwave downward flux (W/m2)
+    real(kind=rb), intent(out) :: hrc1(1,nlay)         ! Clear sky longwave radiative heating rate (K/d)
 
-    real(kind=rb), intent(inout) :: duflx_dt(ncol,nlay+1)  ! change in upward longwave flux (w/m2/K)
+    real(kind=rb), intent(out) :: duflx_dt1(1,nlay+1)  ! change in upward longwave flux (w/m2/K)
                                                          ! with respect to surface temperature
-    real(kind=rb), intent(inout) :: duflxc_dt(ncol,nlay+1) ! change in clear sky upward longwave flux (w/m2/K)
+    real(kind=rb), intent(out) :: duflxc_dt1(1,nlay+1) ! change in clear sky upward longwave flux (w/m2/K)
                                                          ! with respect to surface temperature
-    real(kind=rb), intent(inout) :: uflxspec(ncol,nlay+1,nbndlw) ! Total sky longwave upward flux spectrum (W/m2)
-    real(kind=rb), intent(inout) :: dflxspec(ncol,nlay+1,nbndlw) ! Total sky longwave downward flux spectrum (W/m2)
-    real(kind=rb), intent(inout) :: uflxcspec(ncol,nlay+1,nbndlw) ! Clear sky longwave upward flux spectrum (W/m2)
-    real(kind=rb), intent(inout) :: dflxcspec(ncol,nlay+1,nbndlw) ! Clear sky longwave downward flux spectrum (W/m2)
+    real(kind=rb), intent(out) :: uflxspec1(1,nlay+1,nbndlw) ! Total sky longwave upward flux spectrum (W/m2)
+    real(kind=rb), intent(out) :: dflxspec1(1,nlay+1,nbndlw) ! Total sky longwave downward flux spectrum (W/m2)
+    real(kind=rb), intent(out) :: uflxcspec1(1,nlay+1,nbndlw) ! Clear sky longwave upward flux spectrum (W/m2)
+    real(kind=rb), intent(out) :: dflxcspec1(1,nlay+1,nbndlw) ! Clear sky longwave downward flux spectrum (W/m2)
 
     ! Column internal variables
     real(kind=rb) :: play1(1,nlay)    ! Layer pressures (hPa, mb)
@@ -563,21 +595,6 @@ subroutine climlab_rrtmg_lw_single_col &
     real(kind=rb) :: relqmcl1(1,nlay)          ! liquid particle size (microns)
     real(kind=rb) :: taucmcl1(ngptlw,1,nlay)   ! in-cloud optical depth [mcica]
 
-    real(kind=rb) :: olr_sr1(1,nbndlw)    ! Spectrally-decomposed OLR (W/m2)
-    real(kind=rb) :: uflx1(1,nlay+1)      ! Total sky longwave upward flux (W/m2)
-    real(kind=rb) :: dflx1(1,nlay+1)      ! Total sky longwave downward flux (W/m2)
-    real(kind=rb) :: hr1(1,nlay)          ! Total sky longwave radiative heating rate (K/d)
-    real(kind=rb) :: uflxc1(1,nlay+1)     ! Clear sky longwave upward flux (W/m2)
-    real(kind=rb) :: dflxc1(1,nlay+1)     ! Clear sky longwave downward flux (W/m2)
-    real(kind=rb) :: hrc1(1,nlay)         ! Clear sky longwave radiative heating rate (K/d)
-    real(kind=rb) :: duflx_dt1(1,nlay+1)  ! change in upward longwave flux (w/m2/K)
-                                          ! with respect to surface temperature
-    real(kind=rb) :: duflxc_dt1(1,nlay+1) ! change in clear sky upward longwave flux (w/m2/K)
-                                                         ! with respect to surface temperature
-    real(kind=rb) :: uflxspec1(1,nlay+1,nbndlw) ! Total sky longwave upward flux spectrum (W/m2)
-    real(kind=rb) :: dflxspec1(1,nlay+1,nbndlw) ! Total sky longwave downward flux spectrum (W/m2)
-    real(kind=rb) :: uflxcspec1(1,nlay+1,nbndlw) ! Clear sky longwave upward flux spectrum (W/m2)
-    real(kind=rb) :: dflxcspec1(1,nlay+1,nbndlw) ! Clear sky longwave downward flux spectrum (W/m2)
     integer(kind=im) :: seed, ilay, shift
 
     ! Arrays initialization
@@ -650,17 +667,4 @@ subroutine climlab_rrtmg_lw_single_col &
             taucmcl1 , ciwpmcl1 , clwpmcl1 , reicmcl1 , relqmcl1 , tauaer1  , &
             olr_sr1  , uflx1, dflx1, hr1, uflxc1, dflxc1,  hrc1, &
             duflx_dt1, duflxc_dt1, uflxspec1, dflxspec1, uflxcspec1, dflxcspec1)
-    olr_sr(icol,:) = olr_sr(icol,:) + olr_sr1(1,:)
-    uflx(icol,:) = uflx(icol,:) + uflx1(1,:)
-    dflx(icol,:) = dflx(icol,:) + dflx1(1,:)
-    hr(icol,:) = hr(icol,:) + hr1(1,:)
-    uflxc(icol,:) = uflxc(icol,:) + uflxc1(1,:)
-    dflxc(icol,:) = dflxc(icol,:) + dflxc1(1,:)
-    hrc(icol,:) = hrc(icol,:) + hrc1(1,:)
-    duflx_dt(icol,:) = duflx_dt(icol,:) + duflx_dt1(1,:)
-    duflxc_dt(icol,:) = duflxc_dt(icol,:) + duflxc_dt1(1,:)
-    uflxspec(icol,:,:) = uflxspec(icol,:,:) + uflxspec1(1,:,:)
-    dflxspec(icol,:,:) = dflxspec(icol,:,:) + dflxspec1(1,:,:)
-    uflxcspec(icol,:,:) = uflxcspec(icol,:,:) + uflxcspec1(1,:,:)
-    dflxcspec(icol,:,:) = dflxcspec(icol,:,:) + dflxcspec1(1,:,:)
 end subroutine climlab_rrtmg_lw_single_col
