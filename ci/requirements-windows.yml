@@ -1,0 +1,10 @@
+name: rrtmg_build_env
+channels:
+  - conda-forge
+dependencies:
+  - pip
+  - numpy
+  - m2w64-gcc-fortran
+  - ninja
+  - pytest
+  - meson-python
