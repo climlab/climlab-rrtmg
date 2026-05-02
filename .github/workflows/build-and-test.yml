@@ -7,7 +7,7 @@ on:
   pull_request:
   workflow_dispatch:
   schedule:
-    - cron: '35 4 * * TUE' # Tuesday at 04:35 UTC”
+    - cron: '35 4 * * TUE' # Tuesday at 04:35 UTC"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -24,12 +24,17 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ['3.10', '3.11', '3.12', '3.13']
-        os: [Ubuntu, macOS]
+        os: [Ubuntu, macOS, Windows]
         include:
           - os: Ubuntu
+            environment-file: ci/requirements-linux.yml
             shell: bash -l {0}
           - os: macOS
+            environment-file: ci/requirements-macos.yml
             shell: bash -l {0}
+          - os: Windows
+            environment-file: ci/requirements-windows.yml
+            shell: powershell
 
     steps:
       - uses: actions/checkout@v6
@@ -39,14 +44,32 @@ jobs:
           python-version: ${{ matrix.python-version }}
           activate-environment: rrtmg_build_env
           channel-priority: strict
-          environment-file: ci/requirements.yml
+          environment-file: ${{ matrix.environment-file }}
+
+      - name: Configure PATH for Windows Fortran build
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          # m2w64-gcc-fortran installs gfortran.exe AND libgfortran-5.dll together
+          # in Library/mingw-w64/bin, making them version-consistent.
+          # GHCup's C:\mingw64\bin has gfortran.exe but no libgfortran-5.dll,
+          # causing STATUS_ENTRYPOINT_NOT_FOUND (0xC0000139) at sanity-check time.
+          # Put conda's mingw-w64/bin first and remove all other MinGW sources.
+          $mingwBin = "$env:CONDA\envs\rrtmg_build_env\Library\mingw-w64\bin"
+          $filteredPath = ($env:PATH -split ';' | Where-Object {
+              $_ -notlike 'C:\Strawberry*' -and
+              $_ -notlike '*Library\mingw-w64\bin' -and
+              $_ -notlike 'C:\mingw64*' -and
+              $_ -notlike 'C:\Program Files\Git\mingw64*' -and
+              $_ -ne ''
+          }) -join ';'
+          "PATH=$mingwBin;$filteredPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "FC=$mingwBin\gfortran.exe" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "CC=$mingwBin\gcc.exe" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
       - name: Build and install climlab_rrtmg
         run: |
-          python -m pip install --no-deps .
-      # - name: Import climlab_rrtmg
-      #   run: |
-      #     python -c "import climlab_rrtmg"
-      #     python -c "from climlab_rrtmg import rrtmg_lw, rrtmg_sw"
+          python -m pip install --no-build-isolation --no-deps .
       - name: Run tests
         run: |
           pytest -v --pyargs climlab_rrtmg
