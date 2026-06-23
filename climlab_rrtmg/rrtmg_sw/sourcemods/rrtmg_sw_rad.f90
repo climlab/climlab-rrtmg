@@ -97,17 +97,19 @@
 !------------------------------------------------------------------
 
       subroutine rrtmg_sw &
-            (ncol    ,nlay    ,icld    ,iaer    , &
+            (ncol    ,nlay    ,icld    ,ispec    ,iaer    , &
              play    ,plev    ,tlay    ,tlev    ,tsfc   , &
              h2ovmr , o3vmr   ,co2vmr  ,ch4vmr  ,n2ovmr ,o2vmr , &
              asdir   ,asdif   ,aldir   ,aldif   , &
-             coszen  ,adjes   ,dyofyr  ,scon    ,isolvar, &
+             kmodts, coszen  ,adjes   ,dyofyr  ,scon    ,isolvar, &
              inflgsw ,iceflgsw,liqflgsw,cldfmcl , &
              taucmcl ,ssacmcl ,asmcmcl ,fsfcmcl , &
              ciwpmcl ,clwpmcl ,reicmcl ,relqmcl , &
              tauaer  ,ssaaer  ,asmaer  ,ecaer   , &
              swuflx  ,swdflx  ,swhr    ,swuflxc ,swdflxc ,swhrc, &
-             bndsolvar,indsolvar,solcycfrac)
+             swuflxspec, swdflxspec, swuflxcspec, swdflxcspec, &
+             bndsolvar,indsolvar,solcycfrac, &
+             add_aero_layer, r_mu, t_mu, r_bar, t_bar)
 ! last line is optional I/O ... CLIMLAB moved this comment line
 
 ! ------- Description -------
@@ -224,6 +226,7 @@
                                                       !    1: Random
                                                       !    2: Maximum/random
                                                       !    3: Maximum
+      integer(kind=im), intent(inout) :: ispec        ! spectral ASR output flag
       integer(kind=im), intent(inout) :: iaer         ! Aerosol option flag
                                                       !    0: No aerosol
                                                       !    6: ECMWF method
@@ -265,6 +268,7 @@
                                                       !  distance if adjflx not provided)
       !  CLIMLAB change adjes to an array value, same dimensions as coszen
       real(kind=rb), intent(in) :: adjes(:)           ! Flux adjustment for Earth/Sun distance
+      integer(kind=im), intent(in) :: kmodts
       real(kind=rb), intent(in) :: coszen(:)          ! Cosine of solar zenith angle
                                                       !    Dimensions: (ncol)
       real(kind=rb), intent(in) :: scon               ! Solar constant (W/m2)
@@ -386,7 +390,22 @@
                                                       !    Dimensions: (ncol,nlay+1)
       real(kind=rb), intent(out) :: swhrc(:,:)        ! Clear sky shortwave radiative heating rate (K/d)
                                                       !    Dimensions: (ncol,nlay)
+      real(kind=rb), intent(out) :: swuflxspec(:,:,:)    ! Total sky shortwave upward flux spectrum (W/m2)
+      real(kind=rb), intent(out) :: swdflxspec(:,:,:)    ! Total sky shortwave downward flux spectrum (W/m2)
+      real(kind=rb), intent(out) :: swuflxcspec(:,:,:)   ! Clear sky shortwave upward flux spectrum (W/m2)
+      real(kind=rb), intent(out) :: swdflxcspec(:,:,:)   ! Clear sky shortwave downward flux spectrum (W/m2) 
 
+      integer(kind=im), intent(in) :: add_aero_layer
+      real(kind=rb), intent(in) :: r_mu(ncol,nlay,nbndsw)    ! Aerosols directional reflection
+      real(kind=rb), intent(in) :: t_mu(ncol,nlay,nbndsw)    ! Aerosols directional transmission
+      real(kind=rb), intent(in) :: r_bar(ncol,nlay,nbndsw)    ! Aerosols diffusive reflection
+      real(kind=rb), intent(in) :: t_bar(ncol,nlay,nbndsw)    ! Aerosols diffusive transmission  
+      real(kind=rb) :: r_mu_col(nlay,nbndsw)    ! Column Aerosols directional reflection
+      real(kind=rb) :: t_mu_col(nlay,nbndsw)    ! Column Aerosols directional transmission
+      real(kind=rb) :: r_bar_col(nlay,nbndsw)   ! Column Aerosols diffusive reflection
+      real(kind=rb) :: t_bar_col(nlay,nbndsw)   ! Column Aerosols diffusive transmission  
+
+  
 ! ----- Local -----
 
 ! Control
@@ -514,6 +533,10 @@
       real(kind=rb) :: zbbfd(nlay+2)          ! temporary downward shortwave flux (w/m2)
       real(kind=rb) :: zbbcu(nlay+2)          ! temporary clear sky upward shortwave flux (w/m2)
       real(kind=rb) :: zbbcd(nlay+2)          ! temporary clear sky downward shortwave flux (w/m2)
+      real(kind=rb) :: zbbfuspec(nlay+2,nbndsw)          ! temporary upward shortwave flux spectrum (w/m2)
+      real(kind=rb) :: zbbfdspec(nlay+2,nbndsw)          ! temporary downward shortwave flux spectrum (w/m2)
+      real(kind=rb) :: zbbcuspec(nlay+2,nbndsw)          ! temporary clear sky upward shortwave flux spectrum (w/m2)
+      real(kind=rb) :: zbbcdspec(nlay+2,nbndsw)          ! temporary clear sky downward shortwave flux spectrum (w/m2)
       real(kind=rb) :: zbbfddir(nlay+2)       ! temporary downward direct shortwave flux (w/m2)
       real(kind=rb) :: zbbcddir(nlay+2)       ! temporary clear sky downward direct shortwave flux (w/m2)
       real(kind=rb) :: zuvfd(nlay+2)          ! temporary UV downward shortwave flux (w/m2)
@@ -618,7 +641,6 @@
 ! Modify to loop over all columns (nlon) or over daylight columns
 
       do iplon = 1, ncol
-
 ! CLIMLAB here pass a single-column value of adjes to inatm_sw as we are in the column loop
          adjes_local = adjes(iplon)
 
@@ -789,21 +811,32 @@
             znicddir(i) = 0._rb
             znifddir(i) = 0._rb
          enddo
+         if (add_aero_layer == 1) then
+            do i = 1, nlayers
+               r_mu_col(i,:) = r_mu(iplon, i, :)
+               t_mu_col(i,:) = t_mu(iplon, i, :)
+               r_bar_col(i,:) = r_bar(iplon, i, :)
+               t_bar_col(i,:) = t_bar(iplon, i, :)
+            end do
+         end if
 
 
          call spcvmc_sw &
-             (nlayers, istart, iend, icpr, idelm, iout, &
+             (nlayers, istart, iend, icpr, idelm, ispec, iout, &
               pavel, tavel, pz, tz, tbound, albdif, albdir, &
               zcldfmc, ztaucmc, zasycmc, zomgcmc, ztaormc, &
-              ztaua, zasya, zomga, cossza, coldry, wkl, adjflux, &
+              ztaua, zasya, zomga, cossza, kmodts, coldry, wkl, adjflux, &
               isolvar, svar_f, svar_s, svar_i, &
               svar_f_bnd, svar_s_bnd, svar_i_bnd, &
               laytrop, layswtch, laylow, jp, jt, jt1, &
               co2mult, colch4, colco2, colh2o, colmol, coln2o, colo2, colo3, &
               fac00, fac01, fac10, fac11, &
               selffac, selffrac, indself, forfac, forfrac, indfor, &
-              zbbfd, zbbfu, zbbcd, zbbcu, zuvfd, zuvcd, znifd, znicd, &
-              zbbfddir, zbbcddir, zuvfddir, zuvcddir, znifddir, znicddir)
+              zbbfd, zbbfu, zbbcd, zbbcu, &
+              zbbfdspec, zbbfuspec, zbbcdspec, zbbcuspec, &
+              zuvfd, zuvcd, znifd, znicd, &
+              zbbfddir, zbbcddir, zuvfddir, zuvcddir, znifddir, znicddir, &
+              add_aero_layer, r_mu_col, t_mu_col, r_bar_col, t_bar_col)
 
 ! Transfer up and down, clear and total sky fluxes to output arrays.
 ! Vertical indexing goes from bottom to top; reverse here for GCM if necessary.
@@ -813,6 +846,12 @@
             swdflxc(iplon,i) = zbbcd(i)
             swuflx(iplon,i) = zbbfu(i)
             swdflx(iplon,i) = zbbfd(i)
+            if (ispec .eq. 1) then
+               swuflxcspec(iplon,i, :) = zbbcuspec(i,:)
+               swdflxcspec(iplon,i, :) = zbbcdspec(i,:)
+               swuflxspec(iplon,i, :) = zbbfuspec(i,:)
+               swdflxspec(iplon,i, :) = zbbfdspec(i,:)
+            end if
             uvdflx(i) = zuvfd(i)
             nidflx(i) = znifd(i)
 !  Direct/diffuse fluxes

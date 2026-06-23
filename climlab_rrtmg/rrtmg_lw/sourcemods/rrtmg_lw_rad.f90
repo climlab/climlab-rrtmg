@@ -85,8 +85,9 @@
              inflglw ,iceflglw,liqflglw,cldfmcl , &
              taucmcl ,ciwpmcl ,clwpmcl ,reicmcl ,relqmcl , &
              tauaer  , &
-             olr_sr  ,uflx    ,dflx    ,hr      ,uflxc   ,dflxc,  hrc, &
-             duflx_dt,duflxc_dt )
+             olr_sr  , uflx, dflx, hr, &
+             uflxc   ,dflxc,  hrc, &
+             duflx_dt,duflxc_dt, uflxspec, dflxspec,  uflxcspec, dflxcspec)
 
 ! -------- Description --------
 
@@ -304,6 +305,14 @@
                                                       !    Dimensions: (ncol,nlay+1)
       real(kind=rb), intent(out) :: hrc(:,:)          ! Clear sky longwave radiative heating rate (K/d)
                                                       !    Dimensions: (ncol,nlay)
+      real(kind=rb), intent(out) :: uflxspec(:,:,:)   ! Total sky longwave upward flux spectrum (W/m2)
+                                                      !    Dimensions: (ncol,nlay+1,nbndlw)
+      real(kind=rb), intent(out) :: dflxspec(:,:,:)   ! Total sky longwave downward flux spectrum (W/m2)
+                                                      !    Dimensions: (ncol,nlay+1,nbndlw)
+      real(kind=rb), intent(out) :: uflxcspec(:,:,:)  ! Clear sky longwave upward flux spectrum (W/m2)
+                                                      !    Dimensions: (ncol,nlay+1,nbndlw)
+      real(kind=rb), intent(out) :: dflxcspec(:,:,:)  ! Clear sky longwave downward flux spectrum (W/m2)
+                                                      !    Dimensions: (ncol,nlay+1,nbndlw)
 
 ! ----- Optional Output -----
       real(kind=rb), intent(out), optional :: duflx_dt(:,:)
@@ -433,6 +442,9 @@
 !
 ! Initializations
 
+      duflxc_dt = 0._rb
+      duflx_dt = 0._rb
+      
       oneminus = 1._rb - 1.e-6_rb
       pi = 2._rb * asin(1._rb)
       fluxfac = pi * 2.e4_rb                  ! orig:   fluxfac = pi * 2.d4
@@ -573,6 +585,10 @@
                   dflx(iplon,k+1) = totdflux(k)
                   uflxc(iplon,k+1) = totuclfl(k)
                   dflxc(iplon,k+1) = totdclfl(k)
+                  uflxspec(iplon,k+1,iband) = totuflux(k)
+                  dflxspec(iplon,k+1,iband) = totdflux(k)
+                  uflxcspec(iplon,k+1,iband) = totuclfl(k)
+                  dflxcspec(iplon,k+1,iband) = totdclfl(k)
                enddo
                do k = 0, nlayers-1
                   hr(iplon,k+1) = htr(k)

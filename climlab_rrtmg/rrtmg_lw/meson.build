@@ -1,3 +1,5 @@
+openmp_dep = dependency('openmp', required: true)
+
 python_sources = [
   '__init__.py',
 ]
@@ -74,7 +76,8 @@ lwmodule = custom_target('_rrtmg_lw.c',
 rrtmg_lw_library = static_library(
   'rrtmg_lw',
   rrtmg_lw_sources,
-  include_directories: inc_np
+  include_directories: inc_np,
+  dependencies: openmp_dep
 )
 
 py.extension_module('_rrtmg_lw',
@@ -84,7 +87,7 @@ py.extension_module('_rrtmg_lw',
   ],
   include_directories: inc_np,
   link_with: rrtmg_lw_library,
-  dependencies: py_dep,
+  dependencies: [py_dep, openmp_dep],
   install: true,
   subdir: 'climlab_rrtmg/rrtmg_lw'
 )

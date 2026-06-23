@@ -1,3 +1,5 @@
+openmp_dep = dependency('openmp', required: true)
+
 python_sources = [
   '__init__.py',
 ]
@@ -38,9 +40,9 @@ rrtmg_sw_sources = files(
   'rrtmg_sw_v4.0/gcm_model/src/mcica_random_numbers.f90',
   'rrtmg_sw_v4.0/gcm_model/src/mcica_subcol_gen_sw.f90',
   'rrtmg_sw_v4.0/gcm_model/src/rrtmg_sw_vrtqdr.f90',
-  'rrtmg_sw_v4.0/gcm_model/src/rrtmg_sw_reftra.f90',
+  'sourcemods/rrtmg_sw_reftra.f90',
   'rrtmg_sw_v4.0/gcm_model/src/rrtmg_sw_taumol.f90',
-  'rrtmg_sw_v4.0/gcm_model/src/rrtmg_sw_spcvmc.f90',
+  'sourcemods/rrtmg_sw_spcvmc.f90',
   'rrtmg_sw_v4.0/gcm_model/src/rrtmg_sw_setcoef.f90',
   'rrtmg_sw_v4.0/gcm_model/src/rrtmg_sw_init.f90',
   'rrtmg_sw_v4.0/gcm_model/src/rrtmg_sw_cldprmc.f90',
@@ -75,7 +77,8 @@ swmodule = custom_target('_rrtmg_sw.c',
 rrtmg_sw_library = static_library(
   'rrtmg_sw',
   rrtmg_sw_sources,
-  include_directories: inc_np
+  include_directories: inc_np,
+  dependencies: openmp_dep
 )
 
 py.extension_module('_rrtmg_sw',
@@ -85,7 +88,7 @@ py.extension_module('_rrtmg_sw',
   ],
   include_directories: inc_np,
   link_with: rrtmg_sw_library,
-  dependencies: py_dep,
+  dependencies: [py_dep, openmp_dep],
   install: true,
   subdir: 'climlab_rrtmg/rrtmg_sw'
 )
